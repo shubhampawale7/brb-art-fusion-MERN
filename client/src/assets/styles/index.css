@@ -29,3 +29,17 @@
     color: #ccc;
     cursor: not-allowed;
   }
+
+
+  /* client/src/assets/styles/index.css */
+/* client/src/assets/styles/index.css */
+/* client/src/assets/styles/index.css */
+@layer base {
+  body {
+    /* Apply the dark background and light text to the whole site */
+    @apply bg-page-bg text-text-primary;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}

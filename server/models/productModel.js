@@ -1,4 +1,3 @@
-// server/models/productModel.js
 import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
@@ -6,7 +5,7 @@ const reviewSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User", // Establishes a relationship with the User model
+      ref: "User",
     },
     name: { type: String, required: true },
     rating: { type: Number, required: true },
@@ -22,25 +21,21 @@ const productSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User", // The admin who added the product
+      ref: "User",
     },
     name: {
       type: String,
       required: true,
     },
-    images: [
-      { type: String, required: true }, // Array of image URLs
-    ],
-    videos: [
-      { type: String }, // Array of video URLs
-    ],
+    images: [{ type: String, required: true }],
+    videos: [{ type: String }],
     description: {
       type: String,
       required: true,
     },
     category: {
       type: String,
-      required: true, // e.g., 'Brass Murtis', 'Lanterns', 'Decorative Items'
+      required: true,
     },
     price: {
       type: Number,
@@ -52,7 +47,7 @@ const productSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
-    reviews: [reviewSchema], // Nested reviews
+    reviews: [reviewSchema],
     rating: {
       type: Number,
       required: true,
@@ -63,6 +58,10 @@ const productSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    // --- New Fields for Detailed Write-up ---
+    dimensions: { type: String },
+    weight: { type: String },
+    material: { type: String, default: "100% Brass" },
   },
   {
     timestamps: true,

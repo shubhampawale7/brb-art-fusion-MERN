@@ -4,35 +4,56 @@ import Product from "../models/productModel.js";
 // @route   GET /api/products
 // @access  Public
 const getProducts = async (req, res) => {
-  const pageSize = 8; // Number of products per page
+  const pageSize = 8;
   const page = Number(req.query.pageNumber) || 1;
 
-  // Search keyword logic
   const keyword = req.query.keyword
-    ? {
-        name: {
-          $regex: req.query.keyword,
-          $options: "i", // 'i' for case-insensitive
-        },
-      }
+    ? { name: { $regex: req.query.keyword, $options: "i" } }
     : {};
 
-  // We can add a category filter here in the future
-  // const category = req.query.category ? { category: req.query.category } : {};
+  const category = req.query.category ? { category: req.query.category } : {};
+
+  // --- New Price Filter Logic ---
+  const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
+  const maxPrice = req.query.maxPrice
+    ? Number(req.query.maxPrice)
+    : Number.MAX_SAFE_INTEGER;
+
+  const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
+  // --- End of New Logic ---
 
   try {
-    const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword })
+    // Apply all filters to the count and find queries
+    const count = await Product.countDocuments({
+      ...keyword,
+      ...category,
+      ...priceFilter,
+    });
+    const products = await Product.find({
+      ...keyword,
+      ...category,
+      ...priceFilter,
+    })
       .limit(pageSize)
       .skip(pageSize * (page - 1));
 
     res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (error) {
-    res.status(500);
-    throw new Error("Could not fetch products");
+    res.status(500).json({ message: "Error fetching products" });
   }
 };
 
+// @desc    Get all unique product categories
+// @route   GET /api/products/categories
+// @access  Public
+const getProductCategories = async (req, res) => {
+  try {
+    const categories = await Product.find().distinct("category");
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching categories" });
+  }
+};
 // @desc    Fetch a single product by ID
 // @route   GET /api/products/:id
 // @access  Public
@@ -153,6 +174,7 @@ const createProductReview = async (req, res) => {
 // Add createProductReview to the exports
 export {
   getProducts,
+  getProductCategories,
   getProductById,
   createProduct,
   updateProduct,

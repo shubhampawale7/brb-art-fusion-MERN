@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "sitemap:generate": "node sitemapGenerator.js"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +21,8 @@
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.1",
     "nodemailer": "^7.0.3",
-    "razorpay": "^2.9.6"
+    "razorpay": "^2.9.6",
+    "sitemap": "^8.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

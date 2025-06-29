@@ -7,20 +7,29 @@ import {
   getOrderById,
   updateOrderToPaid,
   getAllOrders,
-  updateOrderToDelivered, // <-- Import new function
+  updateOrderToDelivered,
+  getOrderSummary,
+  getSalesData,
 } from "../controllers/orderController.js";
-import { protect, admin } from "../middlewares/authMiddleware.js"; // <-- Import admin middleware
+import { protect, admin } from "../middlewares/authMiddleware.js";
 
-// The route for creating an order is now separate and only needs 'protect'
+// --- Public / User-specific Routes ---
+// These routes are for individual users and are protected by the 'protect' middleware.
 router.route("/").post(protect, addOrderItems);
-// This new route gets all orders and requires admin access
-router.route("/").get(protect, admin, getAllOrders);
+router.route("/myorders").get(protect, getMyOrders);
+router.route("/create-razorpay-order").post(protect, createRazorpayOrder);
 
-router.use(protect); // All routes below are protected
-router.route("/myorders").get(getMyOrders);
-router.route("/create-razorpay-order").post(createRazorpayOrder);
-router.route("/:id").get(getOrderById);
-router.route("/:id/pay").put(updateOrderToPaid);
-router.route("/:id/deliver").put(updateOrderToDelivered);
+// --- Admin Only Routes ---
+// These routes require the user to be an admin.
+router.route("/").get(protect, admin, getAllOrders);
+router.route("/summary").get(protect, admin, getOrderSummary);
+router.route("/summary/sales-data").get(protect, admin, getSalesData);
+router.route("/:id/deliver").put(protect, admin, updateOrderToDelivered); // Added 'admin' middleware for security
+
+// --- Dynamic ID Routes (Must come last) ---
+// IMPORTANT: Specific text-based routes like '/summary' must come BEFORE dynamic ID routes like '/:id'.
+// Otherwise, Express will mistakenly treat 'summary' as an ID.
+router.route("/:id").get(protect, getOrderById);
+router.route("/:id/pay").put(protect, updateOrderToPaid);
 
 export default router;

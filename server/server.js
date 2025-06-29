@@ -7,7 +7,8 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js"; // <-- 1. Import the new routes
+import orderRoutes from "./routes/orderRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js"; // <-- 1. Import the new routes
 
 // Middleware Imports
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
@@ -29,7 +30,8 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/contact", contactRoutes);
-app.use("/api/orders", orderRoutes); // <-- 2. This is the essential line to add
+app.use("/api/orders", orderRoutes);
+app.use("/api/wishlist", wishlistRoutes); // <-- 2. This is the essential line to add
 
 // Use the custom error handling middleware
 app.use(notFound);

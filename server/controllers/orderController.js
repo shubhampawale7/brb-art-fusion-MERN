@@ -1,7 +1,11 @@
 import Order from "../models/orderModel.js";
+import User from "../models/userModel.js"; // <-- Was missing
+import Product from "../models/productModel.js";
 import crypto from "crypto";
 
-//...
+// @desc    Create a new order
+// @route   POST /api/orders
+// @access  Private
 const addOrderItems = async (req, res) => {
   const {
     orderItems,
@@ -11,7 +15,7 @@ const addOrderItems = async (req, res) => {
     taxPrice,
     shippingPrice,
     totalPrice,
-    paymentResult, // We receive this now
+    paymentResult,
   } = req.body;
 
   if (orderItems && orderItems.length === 0) {
@@ -33,7 +37,6 @@ const addOrderItems = async (req, res) => {
       taxPrice,
       shippingPrice,
       totalPrice,
-      // The order is already paid when it's created in this flow
       isPaid: true,
       paidAt: Date.now(),
       paymentResult: {
@@ -48,7 +51,7 @@ const addOrderItems = async (req, res) => {
     res.status(201).json(createdOrder);
   }
 };
-// ...
+
 // @desc    Get logged in user's orders
 // @route   GET /api/orders/myorders
 // @access  Private
@@ -85,7 +88,6 @@ const getOrderById = async (req, res) => {
 // @route   PUT /api/orders/:id/pay
 // @access  Private
 const updateOrderToPaid = async (req, res) => {
-  // ... (This function remains the same)
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
     req.body;
   const order = await Order.findById(req.params.id);
@@ -117,11 +119,11 @@ const updateOrderToPaid = async (req, res) => {
     throw new Error("Order not found");
   }
 };
+
 // @desc    Get all orders
 // @route   GET /api/orders
 // @access  Private/Admin
 const getAllOrders = async (req, res) => {
-  // We populate the 'user' field to get the user's id and name for the list
   const orders = await Order.find({}).populate("user", "id name");
   res.status(200).json(orders);
 };
@@ -135,12 +137,64 @@ const updateOrderToDelivered = async (req, res) => {
   if (order) {
     order.isDelivered = true;
     order.deliveredAt = Date.now();
-
     const updatedOrder = await order.save();
     res.json(updatedOrder);
   } else {
     res.status(404);
     throw new Error("Order not found");
+  }
+};
+
+// @desc    Get dashboard summary
+// @route   GET /api/orders/summary
+// @access  Private/Admin
+const getOrderSummary = async (req, res) => {
+  try {
+    const ordersSummary = await Order.aggregate([
+      { $match: { isPaid: true } },
+      { $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
+    ]);
+    const totalOrders = await Order.countDocuments({});
+    const totalUsers = await User.countDocuments({});
+    const totalProducts = await Product.countDocuments({});
+
+    res.status(200).json({
+      totalSales: ordersSummary.length > 0 ? ordersSummary[0].totalSales : 0,
+      numOrders: totalOrders,
+      numUsers: totalUsers,
+      numProducts: totalProducts,
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error("Could not fetch summary data");
+  }
+};
+// @desc    Get sales data for charts
+// @route   GET /api/orders/summary/sales-data
+// @access  Private/Admin
+const getSalesData = async (req, res) => {
+  try {
+    const salesData = await Order.aggregate([
+      // Stage 1: Filter for only paid orders
+      {
+        $match: { isPaid: true },
+      },
+      // Stage 2: Group by date and calculate total sales per day
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$paidAt" } },
+          totalSales: { $sum: "$totalPrice" },
+        },
+      },
+      // Stage 3: Sort by date
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+    res.status(200).json(salesData);
+  } catch (error) {
+    res.status(500);
+    throw new Error("Could not fetch sales data");
   }
 };
 
@@ -151,4 +205,6 @@ export {
   updateOrderToPaid,
   getAllOrders,
   updateOrderToDelivered,
+  getOrderSummary,
+  getSalesData,
 };

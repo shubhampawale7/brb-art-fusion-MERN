@@ -6,6 +6,8 @@ import {
   FaUser,
   FaBars,
   FaTimes,
+  FaPhone,
+  FaEnvelope,
 } from "react-icons/fa";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,11 +15,13 @@ import { motion, AnimatePresence } from "framer-motion";
 // Contexts
 import { CartContext } from "../../context/CartContext";
 import { AuthContext } from "../../context/AuthContext";
+import { WishlistContext } from "../../context/WishlistContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const { state: cartState, dispatch: cartDispatch } = useContext(CartContext);
@@ -26,9 +30,15 @@ const Navbar = () => {
   const { state: authState, dispatch: authDispatch } = useContext(AuthContext);
   const { userInfo } = authState;
 
+  // Get wishlist items from the WishlistContext
+  const { state: wishlistState, dispatch: wishlistDispatch } =
+    useContext(WishlistContext);
+  const { wishlistItems } = wishlistState;
+
   const logoutHandler = () => {
     authDispatch({ type: "USER_LOGOUT" });
     cartDispatch({ type: "CART_CLEAR" });
+    wishlistDispatch({ type: "CLEAR_WISHLIST" }); // Clear wishlist on logout
     toast.success("You have been logged out successfully.");
     navigate("/login");
   };
@@ -41,78 +51,174 @@ const Navbar = () => {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRef]);
 
-  const navLinkClass = ({ isActive }) =>
-    `block py-2 px-3 rounded ${
-      isActive ? "text-white bg-[#BFA181]" : "text-gray-700"
-    } hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-[#BFA181] md:p-0`;
+  const categories = [
+    "Brass Murtis",
+    "Lanterns",
+    "Decorative Items",
+    "Pooja Items",
+    "Wall Decor",
+  ];
+
+  const desktopNavLinkClass = ({ isActive }) =>
+    `transition-colors duration-300 ${
+      isActive
+        ? "text-brand-accent"
+        : "text-text-primary hover:text-brand-accent"
+    }`;
+
+  const mobileNavLinkClass = ({ isActive }) =>
+    `block py-2 px-3 rounded text-lg ${
+      isActive
+        ? "bg-brand-accent text-white"
+        : "text-text-primary hover:bg-page-bg"
+    }`;
+
+  const megaMenuLinkClass =
+    "block p-2 text-text-primary hover:bg-page-bg rounded-md transition-colors";
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
+      {/* Top Announcement Bar */}
+      <div className="bg-text-primary text-page-bg text-sm">
+        <div className="container mx-auto px-6 py-2 flex justify-between items-center">
+          <span className="opacity-90">
+            Free Shipping on All Orders Above ₹2000
+          </span>
+          <div className="hidden md:flex items-center space-x-4">
+            <a
+              href="tel:+919876543210"
+              className="flex items-center hover:text-brand-gold"
+            >
+              <FaPhone className="mr-2" /> +91 987 654 3210
+            </a>
+            <a
+              href="mailto:contact@brbartfusion.com"
+              className="flex items-center hover:text-brand-gold"
+            >
+              <FaEnvelope className="mr-2" /> contact@brbartfusion.com
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-[#BFA181] font-serif">
+        <Link
+          to="/"
+          className="text-3xl font-bold font-serif text-text-primary"
+        >
           BRB Art Fusion
         </Link>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex items-center space-x-8 text-lg">
-          <NavLink to="/" className={navLinkClass}>
+        <div className="hidden md:flex items-center space-x-8 text-lg font-semibold">
+          <NavLink to="/" className={desktopNavLinkClass}>
             Home
           </NavLink>
-          <NavLink to="/shop" className={navLinkClass}>
-            Shop
-          </NavLink>
-          <NavLink to="/about" className={navLinkClass}>
-            About
-          </NavLink>
-          <NavLink to="/contact" className={navLinkClass}>
+          <div
+            onMouseEnter={() => setMegaMenuOpen(true)}
+            onMouseLeave={() => setMegaMenuOpen(false)}
+            className="py-2"
+          >
+            <NavLink to="/shop" className={desktopNavLinkClass}>
+              Shop
+            </NavLink>
+            <AnimatePresence>
+              {megaMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute left-0 right-0 top-full mt-0 bg-white shadow-lg border-t"
+                >
+                  <div className="container mx-auto grid grid-cols-4 gap-8 p-8">
+                    <div className="space-y-3">
+                      <h3 className="font-bold text-text-primary mb-2">
+                        Shop By Category
+                      </h3>
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat}
+                          to={`/shop/category/${cat}`}
+                          className={megaMenuLinkClass}
+                        >
+                          {cat}
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="space-y-3">
+                      <h3 className="font-bold text-text-primary mb-2">
+                        Featured
+                      </h3>
+                      <Link to="/product/some-id" className={megaMenuLinkClass}>
+                        Ganesha Collection
+                      </Link>
+                      <Link to="/product/some-id" className={megaMenuLinkClass}>
+                        Diwali Specials
+                      </Link>
+                    </div>
+                    <div>
+                      <img
+                        src="https://images.unsplash.com/photo-1617347398863-2a366a75a7b8?q=80"
+                        alt="Featured Product"
+                        className="rounded-md"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <NavLink to="/contact" className={desktopNavLinkClass}>
             Contact
           </NavLink>
         </div>
 
         {/* Icons and User/Mobile Menu */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 text-text-primary">
+          {/* Favorites link with new badge */}
           <Link
             to="/favorites"
             aria-label="Favorites"
-            className="relative text-gray-600 hover:text-[#BFA181]"
+            className="relative hover:text-brand-accent"
           >
             <FaHeart className="text-2xl" />
+            {wishlistItems && wishlistItems.length > 0 && (
+              <span className="absolute -top-2 -right-3 bg-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {wishlistItems.length}
+              </span>
+            )}
           </Link>
+
           <Link
             to="/cart"
             aria-label="Shopping Cart"
-            className="relative text-gray-600 hover:text-[#BFA181]"
+            className="relative hover:text-brand-accent"
           >
             <FaShoppingCart className="text-2xl" />
             {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-3 bg-brand-accent text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {cartItems.reduce((acc, item) => acc + item.qty, 0)}
               </span>
             )}
           </Link>
 
-          {/* User Dropdown */}
           <div className="hidden md:block relative" ref={dropdownRef}>
             {userInfo ? (
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center space-x-2 focus:outline-none text-gray-600 hover:text-[#BFA181]"
+                className="flex items-center space-x-2 focus:outline-none hover:text-brand-accent"
               >
-                <span className="font-semibold">
-                  {userInfo.name.split(" ")[0]}
-                </span>
                 <FaUser className="text-2xl" />
               </button>
             ) : (
               <Link
                 to="/login"
                 aria-label="Login"
-                className="text-gray-600 hover:text-[#BFA181]"
+                className="hover:text-brand-accent"
               >
                 <FaUser className="text-2xl" />
               </Link>
@@ -123,25 +229,30 @@ const Navbar = () => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5"
+                  className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5"
                 >
+                  <div className="px-4 py-3 border-b">
+                    <p className="text-sm font-medium text-text-primary truncate">
+                      {userInfo.name}
+                    </p>
+                  </div>
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-text-primary hover:bg-page-bg"
                   >
-                    Profile
+                    Your Profile
                   </Link>
                   {userInfo.isAdmin && (
                     <Link
                       to="/admin/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-text-primary hover:bg-page-bg"
                     >
-                      Dashboard
+                      Admin Dashboard
                     </Link>
                   )}
                   <button
                     onClick={logoutHandler}
-                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="w-full text-left block px-4 py-2 text-sm text-text-primary hover:bg-page-bg"
                   >
                     Logout
                   </button>
@@ -150,13 +261,12 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-2xl text-gray-600"
+              className="text-2xl"
             >
-              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+              <FaBars />
             </button>
           </div>
         </div>
@@ -169,33 +279,26 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden"
+            className="md:hidden bg-white border-t"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               <NavLink
                 to="/"
-                className={navLinkClass}
+                className={mobileNavLinkClass}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Home
               </NavLink>
               <NavLink
                 to="/shop"
-                className={navLinkClass}
+                className={mobileNavLinkClass}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Shop
               </NavLink>
               <NavLink
-                to="/about"
-                className={navLinkClass}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About
-              </NavLink>
-              <NavLink
                 to="/contact"
-                className={navLinkClass}
+                className={mobileNavLinkClass}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Contact
@@ -205,7 +308,7 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/profile"
-                    className={`${navLinkClass} text-gray-700`}
+                    className={`${mobileNavLinkClass}`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Profile
@@ -213,7 +316,7 @@ const Navbar = () => {
                   {userInfo.isAdmin && (
                     <Link
                       to="/admin/dashboard"
-                      className={`${navLinkClass} text-gray-700`}
+                      className={`${mobileNavLinkClass}`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard
@@ -224,7 +327,7 @@ const Navbar = () => {
                       logoutHandler();
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full text-left block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                    className="w-full text-left block px-3 py-2 text-lg text-text-primary hover:bg-page-bg rounded"
                   >
                     Logout
                   </button>
@@ -232,7 +335,7 @@ const Navbar = () => {
               ) : (
                 <Link
                   to="/login"
-                  className={navLinkClass}
+                  className={mobileNavLinkClass}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Login

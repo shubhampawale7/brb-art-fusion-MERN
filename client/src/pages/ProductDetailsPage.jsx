@@ -7,12 +7,12 @@ import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
 import { FaHeart, FaShoppingCart, FaStar } from "react-icons/fa";
-
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 import API from "../services/api";
-
-// Import slick-carousel and react-photo-view styles
+import FavoriteButton from "../components/products/FavoriteButton";
+import ProductCard from "../components/products/ProductCard";
+// Import styles for libraries
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "react-photo-view/dist/react-photo-view.css";
@@ -22,22 +22,29 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
-
-  // State for review form
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [loadingReview, setLoadingReview] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
-  // Get contexts
   const { state: cartState, dispatch: cartDispatch } = useContext(CartContext);
   const { state: authState } = useContext(AuthContext);
   const { userInfo } = authState;
 
-  const fetchProduct = async () => {
+  const fetchProductData = async () => {
     try {
       setLoading(true);
-      const { data } = await API.get(`/products/${productId}`);
-      setProduct(data);
+      const { data: productData } = await API.get(`/products/${productId}`);
+      setProduct(productData);
+
+      if (productData.category) {
+        const { data: relatedData } = await API.get(`/products`, {
+          params: { category: productData.category },
+        });
+        setRelatedProducts(
+          relatedData.products.filter((p) => p._id !== productData._id)
+        );
+      }
     } catch (error) {
       toast.error("Product not found or there was an error.");
     } finally {
@@ -47,7 +54,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchProduct();
+    fetchProductData();
   }, [productId]);
 
   const addToCartHandler = () => {
@@ -55,7 +62,7 @@ const ProductDetailPage = () => {
     const newQty = existItem ? existItem.qty + qty : qty;
 
     if (product.countInStock < newQty) {
-      toast.error("Sorry, product is out of stock");
+      toast.error("Sorry, this product is out of stock");
       return;
     }
 
@@ -100,7 +107,7 @@ const ProductDetailPage = () => {
         <img
           src={product?.images[i]}
           alt=""
-          className="w-16 h-16 object-cover rounded-md"
+          className="w-20 h-20 object-cover rounded-md border-2 border-transparent hover:border-brand-accent"
         />
       </div>
     ),
@@ -117,7 +124,7 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <div className="text-center py-10 font-bold text-2xl">
+      <div className="text-center py-10 font-serif text-2xl text-text-primary">
         Product Not Found.
       </div>
     );
@@ -133,13 +140,14 @@ const ProductDetailPage = () => {
         />
       </Helmet>
 
+      {/* Main Product Section */}
       <motion.div
         className="container mx-auto px-6 pt-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Image Gallery Column */}
           <PhotoProvider>
             <Slider {...sliderSettings}>
@@ -152,7 +160,7 @@ const ProductDetailPage = () => {
                     <img
                       src={image}
                       alt={`${product.name} - view ${index + 1}`}
-                      className="w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg"
+                      className="w-full h-auto max-h-[550px] object-contain"
                     />
                   </PhotoView>
                 </div>
@@ -161,87 +169,118 @@ const ProductDetailPage = () => {
           </PhotoProvider>
 
           {/* Product Info Column */}
-          <div className="flex flex-col space-y-4">
-            <h1 className="text-4xl font-bold font-serif text-gray-800">
+          <div className="flex flex-col space-y-5">
+            <h1 className="text-5xl font-bold font-serif text-text-primary">
               {product.name}
             </h1>
             <div className="flex items-center space-x-2">
               <div className="flex items-center">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[...Array(5)].map((_, i) => (
                   <FaStar
-                    key={star}
+                    key={i}
                     className={
-                      product.rating >= star
-                        ? "text-yellow-400"
-                        : "text-gray-300"
+                      product.rating > i ? "text-yellow-400" : "text-gray-300"
                     }
                   />
                 ))}
               </div>
-              <span className="text-gray-600">
+              <span className="text-text-secondary">
                 ({product.numReviews} reviews)
               </span>
             </div>
-            <p className="text-3xl font-semibold text-[#BFA181]">
+            <p className="text-4xl font-sans font-bold text-brand-accent">
               ₹{product.price.toFixed(2)}
             </p>
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-gray-600 leading-relaxed">
-                {product.description}
-              </p>
+
+            {/* Detailed Write-up Section */}
+            <div className="border-t pt-4 space-y-6 text-text-secondary leading-relaxed">
+              <p>{product.description}</p>
+              <div>
+                <h3 className="font-bold text-lg text-text-primary mb-2">
+                  Artisan's Note
+                </h3>
+                <p>
+                  This piece is a testament to the timeless art of brasswork,
+                  brought to life by the skilled hands of our master artisans.
+                  Each curve and detail is meticulously crafted, ensuring you
+                  receive not just a product, but a piece of heritage.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-text-primary mb-2">
+                  Details & Dimensions
+                </h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>
+                    <strong>Material:</strong> {product.material}
+                  </li>
+                  <li>
+                    <strong>Dimensions:</strong> {product.dimensions || "N/A"}
+                  </li>
+                  <li>
+                    <strong>Weight:</strong> {product.weight || "N/A"}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-text-primary mb-2">
+                  Care Instructions
+                </h3>
+                <p>
+                  To maintain its lustrous finish, gently wipe with a soft, dry
+                  cloth. Avoid contact with harsh chemicals or abrasives. A
+                  natural patina may develop over time, adding to its unique
+                  character.
+                </p>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="font-semibold">Availability:</span>
+
+            <div className="flex items-center space-x-2 pt-4 border-t">
+              <span className="font-semibold text-lg text-text-primary">
+                Availability:
+              </span>
               <span
-                className={
+                className={`font-semibold ${
                   product.countInStock > 0 ? "text-green-600" : "text-red-600"
-                }
+                }`}
               >
-                {product.countInStock > 0
-                  ? `In Stock (${product.countInStock} left)`
-                  : "Out of Stock"}
+                {product.countInStock > 0 ? `In Stock` : "Out of Stock"}
               </span>
             </div>
 
             {product.countInStock > 0 && (
-              <div className="flex flex-col space-y-4 pt-4">
-                <div className="flex items-center space-x-3">
-                  <span className="font-semibold">Quantity:</span>
+              <div className="flex flex-col space-y-4 pt-2">
+                <div className="flex items-center space-x-4">
+                  <span className="font-semibold text-lg text-text-primary">
+                    Quantity:
+                  </span>
                   <div className="flex items-center border border-gray-300 rounded-md">
                     <button
                       onClick={() => setQty((prev) => Math.max(1, prev - 1))}
-                      className="px-3 py-2 border-r hover:bg-gray-100"
+                      className="px-4 py-2 hover:bg-page-bg transition"
                     >
                       -
                     </button>
-                    <span className="px-5 py-2 font-bold">{qty}</span>
+                    <span className="px-6 py-2 font-bold text-lg">{qty}</span>
                     <button
-                      onClick={() =>
-                        setQty((prev) =>
-                          Math.min(product.countInStock, prev + 1)
-                        )
-                      }
-                      className="px-3 py-2 border-l hover:bg-gray-100"
+                      disabled={qty >= product.countInStock}
+                      onClick={() => setQty((prev) => prev + 1)}
+                      className="px-4 py-2 hover:bg-page-bg transition disabled:cursor-not-allowed"
                     >
                       +
                     </button>
                   </div>
                 </div>
-
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={addToCartHandler}
-                    className="flex-grow flex items-center justify-center bg-[#BFA181] text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition disabled:bg-gray-400"
+                    className="flex-grow flex items-center justify-center bg-brand-accent text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition text-lg font-semibold"
                   >
-                    <FaShoppingCart className="mr-2" /> Add to Cart
+                    <FaShoppingCart className="mr-3" /> Add to Cart
                   </button>
-                  <button
-                    className="flex items-center justify-center border border-gray-300 p-4 rounded-full hover:bg-gray-100 transition"
-                    aria-label="Add to Favorites"
-                  >
-                    <FaHeart className="text-gray-600 text-xl" />
-                  </button>
+                  <div className="relative">
+                    <FavoriteButton product={product} />
+                  </div>
                 </div>
               </div>
             )}
@@ -250,68 +289,42 @@ const ProductDetailPage = () => {
       </motion.div>
 
       {/* Reviews Section */}
-      <div className="container mx-auto px-6 py-16">
-        <h2 className="text-3xl font-bold mb-8 border-b pb-4">
+      <div className="container mx-auto px-6 py-20 bg-page-bg mt-16 rounded-lg">
+        <h2 className="text-4xl font-bold text-text-primary mb-8">
           Customer Reviews
         </h2>
         <div className="grid md:grid-cols-2 gap-12">
-          {/* Display Existing Reviews */}
-          <div className="space-y-6">
-            {product.reviews.length === 0 && (
-              <p className="text-gray-600">
-                No reviews yet. Be the first to share your thoughts!
-              </p>
-            )}
-            {product.reviews.map((review) => (
-              <div
-                key={review._id}
-                className="p-4 border rounded-md bg-gray-50"
-              >
-                <p className="font-bold">{review.name}</p>
-                <div className="flex items-center my-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <FaStar
-                      key={star}
-                      className={
-                        review.rating >= star
-                          ? "text-yellow-400"
-                          : "text-gray-300"
-                      }
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-500 text-sm mb-2">
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </p>
-                <p className="text-gray-700">{review.comment}</p>
-              </div>
-            ))}
-          </div>
-          {/* Write a Review Form */}
           <div>
-            <h3 className="text-2xl font-semibold mb-4">Write your review</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-text-primary">
+              Write your review
+            </h3>
             {userInfo ? (
               <form
                 onSubmit={submitReviewHandler}
-                className="space-y-4 bg-white p-6 rounded-lg shadow-md"
+                className="space-y-4 bg-card-bg p-8 rounded-lg shadow-md"
               >
                 <div>
-                  <label className="font-semibold">Rating</label>
+                  <label className="font-semibold text-text-primary">
+                    Your Rating
+                  </label>
                   <div className="flex space-x-1 mt-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                    {[...Array(5)].map((_, i) => (
                       <FaStar
-                        key={star}
-                        className={`cursor-pointer text-3xl ${
-                          rating >= star ? "text-yellow-400" : "text-gray-300"
+                        key={i}
+                        className={`cursor-pointer text-3xl transition-colors ${
+                          rating > i ? "text-yellow-400" : "text-gray-300"
                         }`}
-                        onClick={() => setRating(star)}
+                        onClick={() => setRating(i + 1)}
                       />
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="comment" className="font-semibold">
-                    Comment
+                  <label
+                    htmlFor="comment"
+                    className="font-semibold text-text-primary"
+                  >
+                    Your Comment
                   </label>
                   <textarea
                     id="comment"
@@ -319,13 +332,13 @@ const ProductDetailPage = () => {
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     required
-                    className="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-[#BFA181] focus:outline-none"
+                    className="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-brand-accent focus:outline-none transition text-text-primary bg-page-bg"
                   ></textarea>
                 </div>
                 <button
                   type="submit"
                   disabled={loadingReview}
-                  className="w-full bg-[#333333] text-white py-3 rounded-md hover:bg-black transition flex justify-center items-center"
+                  className="w-full bg-text-primary text-white py-3 rounded-md hover:bg-opacity-90 transition flex justify-center items-center font-semibold"
                 >
                   {loadingReview ? (
                     <ClipLoader size={20} color="white" />
@@ -335,20 +348,71 @@ const ProductDetailPage = () => {
                 </button>
               </form>
             ) : (
-              <p className="text-gray-600 p-6 bg-gray-100 rounded-md">
-                Please{" "}
-                <Link
-                  to="/login"
-                  className="text-[#BFA181] font-semibold hover:underline"
-                >
-                  sign in
-                </Link>{" "}
-                to write a review.
+              <div className="p-6 bg-card-bg rounded-md">
+                <p className="text-text-secondary">
+                  Please{" "}
+                  <Link
+                    to="/login"
+                    className="text-brand-accent font-semibold hover:underline"
+                  >
+                    sign in
+                  </Link>{" "}
+                  to write a review.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="space-y-6">
+            {product.reviews.length === 0 && (
+              <p className="text-text-secondary p-6 bg-card-bg rounded-md shadow-sm">
+                No reviews yet. Be the first to share your thoughts!
               </p>
             )}
+            {product.reviews.map((review) => (
+              <div
+                key={review._id}
+                className="p-6 border rounded-md bg-card-bg shadow-sm"
+              >
+                <p className="font-bold text-lg text-text-primary">
+                  {review.name}
+                </p>
+                <div className="flex items-center my-1">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar
+                      key={i}
+                      className={
+                        review.rating > i ? "text-yellow-400" : "text-gray-300"
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-500 text-sm mb-2">
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </p>
+                <p className="text-text-secondary">{review.comment}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <section className="container mx-auto px-6 py-20">
+          <h2 className="text-4xl font-bold text-center mb-10">
+            You Might Also Like
+          </h2>
+          <Slider {...relatedSliderSettings}>
+            {relatedProducts.map((relatedProduct) => (
+              <ProductCard
+                key={relatedProduct._id}
+                product={relatedProduct}
+                onQuickViewClick={() => {}}
+              />
+            ))}
+          </Slider>
+        </section>
+      )}
     </>
   );
 };

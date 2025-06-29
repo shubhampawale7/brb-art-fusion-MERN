@@ -6,6 +6,7 @@ import { ParallaxProvider } from "react-scroll-parallax";
 // Providers
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 
 // Layout Components
 import Navbar from "./components/layout/Navbar";
@@ -16,24 +17,21 @@ import AdminLayout from "./components/layout/AdminLayout";
 import PrivateRoute from "./components/common/PrivateRoute";
 import AdminRoute from "./components/common/AdminRoute";
 
-// Public Page Components
+// Page Components
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
-import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import ProductDetailsPage from "./pages/ProductDetailsPage";
 import CartPage from "./pages/CartPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ShippingPage from "./pages/ShippingPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-
-// Private User Page Components
-import ShippingPage from "./pages/ShippingPage";
-import PaymentPage from "./pages/PaymentPage";
 import PlaceOrderPage from "./pages/PlaceOrderPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import ProfilePage from "./pages/ProfilePage";
+import FavoritesPage from "./pages/FavoritesPage";
 
 // Admin Page Components
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -41,72 +39,97 @@ import ProductListPage from "./pages/admin/ProductListPage";
 import ProductEditPage from "./pages/admin/ProductEditPage";
 import OrderListPage from "./pages/admin/OrderListPage";
 import UserListPage from "./pages/admin/UserListPage";
+import PaymentPage from "./pages/PaymentPage";
 
 function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
         <CartProvider>
-          <ParallaxProvider>
-            <div className="flex flex-col min-h-screen bg-[#FDFDFD] text-[#333333]">
-              <Toaster position="top-center" richColors />
-              <Navbar />
-              <main className="flex-grow">
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/shop" element={<ShopPage />} />
-                  <Route path="/page/:pageNumber" element={<ShopPage />} />
-                  <Route path="/search/:keyword" element={<ShopPage />} />
-                  <Route
-                    path="/search/:keyword/page/:pageNumber"
-                    element={<ShopPage />}
-                  />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/product/:id" element={<ProductDetailsPage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route
-                    path="/forgotpassword"
-                    element={<ForgotPasswordPage />}
-                  />
-                  <Route
-                    path="/resetpassword/:resettoken"
-                    element={<ResetPasswordPage />}
-                  />
+          <WishlistProvider>
+            <ParallaxProvider>
+              <div className="flex flex-col min-h-screen bg-page-bg text-text-primary">
+                <Toaster position="top-center" richColors />
+                <Navbar />
+                <main className="flex-grow">
+                  <Routes>
+                    {/* --- Public Routes --- */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route
+                      path="/product/:id"
+                      element={<ProductDetailsPage />}
+                    />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route
+                      path="/forgotpassword"
+                      element={<ForgotPasswordPage />}
+                    />
+                    <Route
+                      path="/resetpassword/:resettoken"
+                      element={<ResetPasswordPage />}
+                    />
 
-                  {/* Protected User Routes */}
-                  <Route path="" element={<PrivateRoute />}>
-                    <Route path="/shipping" element={<ShippingPage />} />
-                    <Route path="/payment" element={<PaymentPage />} />
-                    <Route path="/placeorder" element={<PlaceOrderPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/order/:id" element={<OrderDetailPage />} />
-                  </Route>
+                    {/* --- Shop, Search, and Pagination Routes --- */}
+                    <Route path="/shop" element={<ShopPage />} />
+                    <Route
+                      path="/shop/category/:category"
+                      element={<ShopPage />}
+                    />
+                    <Route
+                      path="/shop/page/:pageNumber"
+                      element={<ShopPage />}
+                    />
+                    <Route
+                      path="/shop/search/:keyword"
+                      element={<ShopPage />}
+                    />
+                    <Route
+                      path="/shop/search/:keyword/page/:pageNumber"
+                      element={<ShopPage />}
+                    />
+                    <Route
+                      path="/shop/category/:category/page/:pageNumber"
+                      element={<ShopPage />}
+                    />
 
-                  {/* Protected Admin Routes */}
-                  <Route path="/admin" element={<AdminRoute />}>
-                    <Route element={<AdminLayout />}>
-                      <Route
-                        path="dashboard"
-                        element={<AdminDashboardPage />}
-                      />
-                      <Route path="productlist" element={<ProductListPage />} />
-                      <Route path="orderlist" element={<OrderListPage />} />
-                      <Route path="userlist" element={<UserListPage />} />
-                      <Route
-                        path="product/:id/edit"
-                        element={<ProductEditPage />}
-                      />
+                    {/* --- Protected User Routes --- */}
+                    <Route path="" element={<PrivateRoute />}>
+                      <Route path="/shipping" element={<ShippingPage />} />
+                      <Route path="/payment" element={<PaymentPage />} />
+                      <Route path="/placeorder" element={<PlaceOrderPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/order/:id" element={<OrderDetailPage />} />
+                      <Route path="/favorites" element={<FavoritesPage />} />
                     </Route>
-                  </Route>
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-          </ParallaxProvider>
+
+                    {/* --- Protected Admin Routes --- */}
+                    <Route path="/admin" element={<AdminRoute />}>
+                      <Route element={<AdminLayout />}>
+                        <Route
+                          path="dashboard"
+                          element={<AdminDashboardPage />}
+                        />
+                        <Route
+                          path="productlist"
+                          element={<ProductListPage />}
+                        />
+                        <Route path="orderlist" element={<OrderListPage />} />
+                        <Route path="userlist" element={<UserListPage />} />
+                        <Route
+                          path="product/:id/edit"
+                          element={<ProductEditPage />}
+                        />
+                      </Route>
+                    </Route>
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </ParallaxProvider>
+          </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </HelmetProvider>
