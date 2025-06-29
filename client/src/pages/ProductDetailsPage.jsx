@@ -7,11 +7,13 @@ import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
 import { FaHeart, FaShoppingCart, FaStar } from "react-icons/fa";
+
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 import API from "../services/api";
 import FavoriteButton from "../components/products/FavoriteButton";
 import ProductCard from "../components/products/ProductCard";
+
 // Import styles for libraries
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -42,7 +44,9 @@ const ProductDetailPage = () => {
           params: { category: productData.category },
         });
         setRelatedProducts(
-          relatedData.products.filter((p) => p._id !== productData._id)
+          relatedData.products
+            .filter((p) => p._id !== productData._id)
+            .slice(0, 8) // Get up to 8 related products
         );
       }
     } catch (error) {
@@ -75,6 +79,10 @@ const ProductDetailPage = () => {
 
   const submitReviewHandler = async (e) => {
     e.preventDefault();
+    if (rating === 0) {
+      toast.error("Please select a rating.");
+      return;
+    }
     setLoadingReview(true);
     try {
       await API.post(
@@ -85,7 +93,7 @@ const ProductDetailPage = () => {
         }
       );
       toast.success("Review submitted successfully!");
-      fetchProduct(); // Refetch product data to show the new review
+      fetchProductData(); // Refetch product data to show the new review
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to submit review.");
     } finally {
@@ -95,7 +103,7 @@ const ProductDetailPage = () => {
     }
   };
 
-  const sliderSettings = {
+  const mainSliderSettings = {
     dots: true,
     infinite: true,
     speed: 500,
@@ -112,6 +120,19 @@ const ProductDetailPage = () => {
       </div>
     ),
     dotsClass: "slick-dots slick-thumb",
+  };
+
+  const relatedSliderSettings = {
+    dots: true,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    responsive: [
+      { breakpoint: 1024, settings: { slidesToShow: 3 } },
+      { breakpoint: 768, settings: { slidesToShow: 2 } },
+      { breakpoint: 640, settings: { slidesToShow: 1 } },
+    ],
   };
 
   if (loading) {
@@ -140,7 +161,6 @@ const ProductDetailPage = () => {
         />
       </Helmet>
 
-      {/* Main Product Section */}
       <motion.div
         className="container mx-auto px-6 pt-12"
         initial={{ opacity: 0, y: 20 }}
@@ -148,9 +168,8 @@ const ProductDetailPage = () => {
         transition={{ duration: 0.5 }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Image Gallery Column */}
           <PhotoProvider>
-            <Slider {...sliderSettings}>
+            <Slider {...mainSliderSettings}>
               {product.images.map((image, index) => (
                 <div
                   key={index}
@@ -160,7 +179,7 @@ const ProductDetailPage = () => {
                     <img
                       src={image}
                       alt={`${product.name} - view ${index + 1}`}
-                      className="w-full h-auto max-h-[550px] object-contain"
+                      className="w-full h-auto max-h-[550px] object-contain rounded-lg"
                     />
                   </PhotoView>
                 </div>
@@ -168,7 +187,6 @@ const ProductDetailPage = () => {
             </Slider>
           </PhotoProvider>
 
-          {/* Product Info Column */}
           <div className="flex flex-col space-y-5">
             <h1 className="text-5xl font-bold font-serif text-text-primary">
               {product.name}
@@ -192,7 +210,6 @@ const ProductDetailPage = () => {
               ₹{product.price.toFixed(2)}
             </p>
 
-            {/* Detailed Write-up Section */}
             <div className="border-t pt-4 space-y-6 text-text-secondary leading-relaxed">
               <p>{product.description}</p>
               <div>
@@ -288,7 +305,6 @@ const ProductDetailPage = () => {
         </div>
       </motion.div>
 
-      {/* Reviews Section */}
       <div className="container mx-auto px-6 py-20 bg-page-bg mt-16 rounded-lg">
         <h2 className="text-4xl font-bold text-text-primary mb-8">
           Customer Reviews
@@ -396,7 +412,6 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
-      {/* Related Products Section */}
       {relatedProducts.length > 0 && (
         <section className="container mx-auto px-6 py-20">
           <h2 className="text-4xl font-bold text-center mb-10">
@@ -404,11 +419,7 @@ const ProductDetailPage = () => {
           </h2>
           <Slider {...relatedSliderSettings}>
             {relatedProducts.map((relatedProduct) => (
-              <ProductCard
-                key={relatedProduct._id}
-                product={relatedProduct}
-                onQuickViewClick={() => {}}
-              />
+              <ProductCard key={relatedProduct._id} product={relatedProduct} />
             ))}
           </Slider>
         </section>

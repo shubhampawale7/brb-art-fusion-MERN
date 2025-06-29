@@ -4,11 +4,16 @@ import { Link } from "react-router-dom";
 const HeroSection = () => (
   <div className="relative h-[85vh] flex items-center justify-center text-white text-center overflow-hidden">
     <div className="absolute inset-0 w-full h-full">
-      <img
-        src="https://images.unsplash.com/photo-1615093952934-28312678c487?q=80&w=1974"
-        alt="Brass craftsmanship"
+      <video
         className="w-full h-full object-cover"
-      />
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source src="/videos/hero_vid.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
       <div className="absolute inset-0 bg-black opacity-50"></div>
     </div>
     <motion.div
@@ -26,7 +31,7 @@ const HeroSection = () => (
       </p>
       <Link
         to="/shop"
-        className="mt-8 inline-block bg-brand-accent text-white text-white text-white px-10 py-4 rounded-md text-lg font-semibold hover:bg-opacity-90 transition-transform hover:scale-105"
+        className="mt-8 inline-block bg-brand-accent text-white px-10 py-4 rounded-md text-lg font-semibold hover:bg-opacity-90 transition-transform hover:scale-105"
       >
         Explore The Collection
       </Link>
