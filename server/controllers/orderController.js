@@ -124,7 +124,14 @@ const updateOrderToPaid = async (req, res) => {
 // @route   GET /api/orders
 // @access  Private/Admin
 const getAllOrders = async (req, res) => {
-  const orders = await Order.find({}).populate("user", "id name");
+  // Check if a 'limit' query parameter exists
+  const limit = req.query.limit ? Number(req.query.limit) : 0;
+
+  const orders = await Order.find({})
+    .populate("user", "id name")
+    .sort({ createdAt: -1 }) // Sort by newest first
+    .limit(limit); // Apply the limit if it exists
+
   res.status(200).json(orders);
 };
 
