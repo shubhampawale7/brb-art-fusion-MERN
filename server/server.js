@@ -26,14 +26,16 @@ app.use(cors());
 app.use(express.json());
 
 // --- Mount All API Routes ---
-app.use("/api/users", userRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/articles", articleRoutes);
-
+// app.use("/api/users", userRoutes);
+// app.use("/api/products", productRoutes);
+// app.use("/api/contact", contactRoutes);
+// app.use("/api/orders", orderRoutes);
+// app.use("/api/wishlist", wishlistRoutes);
+// app.use("/api/upload", uploadRoutes);
+// app.use("/api/articles", articleRoutes);
+app.get("/", (req, res) => {
+  res.send("API running - basic route only");
+});
 // --- Deployment Configuration ---
 if (process.env.NODE_ENV === "production") {
   const __dirname = path.resolve();
