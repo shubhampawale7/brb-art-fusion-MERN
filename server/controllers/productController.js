@@ -1,31 +1,42 @@
 import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
 
-// All functions are now wrapped in asyncHandler for clean error handling.
-
-// @desc    Fetch all products with search, filter, and pagination
+// @desc    Fetch all products with all features
 // @route   GET /api/products
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = 8;
+  const pageSize = 10;
   const page = Number(req.query.pageNumber) || 1;
 
   const keyword = req.query.keyword
     ? { name: { $regex: req.query.keyword, $options: "i" } }
     : {};
-
   const category = req.query.category ? { category: req.query.category } : {};
-
   const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
   const maxPrice = req.query.maxPrice
     ? Number(req.query.maxPrice)
     : Number.MAX_SAFE_INTEGER;
   const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
 
-  let sortOrder = {};
-  if (req.query.sort === "latest") {
-    sortOrder = { createdAt: -1 };
-  } else if (req.query.sort === "toprated") {
-    sortOrder = { rating: -1 };
+  let sortOrder = { createdAt: -1 }; // Default sort
+  switch (req.query.sort) {
+    case "name_asc":
+      sortOrder = { name: 1 };
+      break;
+    case "name_desc":
+      sortOrder = { name: -1 };
+      break;
+    case "price_asc":
+      sortOrder = { price: 1 };
+      break;
+    case "price_desc":
+      sortOrder = { price: -1 };
+      break;
+    case "latest":
+      sortOrder = { createdAt: -1 };
+      break;
+    case "toprated":
+      sortOrder = { rating: -1 };
+      break;
   }
 
   const count = await Product.countDocuments({
@@ -64,7 +75,7 @@ const getProductCategories = asyncHandler(async (req, res) => {
   res.json(categories);
 });
 
-// @desc    Create a product
+// @desc    Create a product by an admin
 // @route   POST /api/products
 const createProduct = asyncHandler(async (req, res) => {
   const product = new Product({
@@ -72,20 +83,16 @@ const createProduct = asyncHandler(async (req, res) => {
     price: 0,
     user: req.user._id,
     images: ["/images/sample.jpg"],
-    videos: [],
     category: "Sample Category",
     countInStock: 0,
     numReviews: 0,
     description: "Sample description",
-    dimensions: "N/A",
-    weight: "N/A",
-    material: "100% Brass",
   });
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
 });
 
-// @desc    Update a product
+// @desc    Update a product by an admin
 // @route   PUT /api/products/:id
 const updateProduct = asyncHandler(async (req, res) => {
   const {
@@ -103,6 +110,10 @@ const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
+    if (!images || images.length === 0) {
+      res.status(400);
+      throw new Error("At least one product image is required.");
+    }
     product.name = name;
     product.price = Number(price);
     product.description = description;
@@ -113,6 +124,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.dimensions = dimensions;
     product.weight = weight;
     product.material = material;
+
     const updatedProduct = await product.save();
     res.json(updatedProduct);
   } else {
@@ -121,7 +133,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Delete a product
+// @desc    Delete a product by an admin
 // @route   DELETE /api/products/:id
 const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);

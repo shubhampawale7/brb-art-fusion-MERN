@@ -18,6 +18,7 @@ import { CartContext } from "../../context/CartContext";
 import { AuthContext } from "../../context/AuthContext";
 import { WishlistContext } from "../../context/WishlistContext";
 import API from "../../services/api";
+import Logo from "../common/Logo";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const Navbar = () => {
   const [featuredItems, setFeaturedItems] = useState([]);
 
   const { state: cartState, dispatch: cartDispatch } = useContext(CartContext);
-  const { cartItems } = cartState;
+  const { cartItems, isCartOpen } = cartState; // Get isCartOpen to handle drawer logic
   const { state: authState, dispatch: authDispatch } = useContext(AuthContext);
   const { userInfo } = authState;
   const { state: wishlistState, dispatch: wishlistDispatch } =
@@ -79,12 +80,14 @@ const Navbar = () => {
         ? "text-brand-accent"
         : "text-text-primary hover:text-brand-accent"
     }`;
+
   const mobileNavLinkClass = ({ isActive }) =>
-    `block py-2 px-3 rounded text-lg ${
+    `block px-3 py-2 rounded text-lg ${
       isActive
         ? "bg-brand-accent text-white"
         : "text-text-primary hover:bg-page-bg"
     }`;
+
   const megaMenuLinkClass =
     "block p-2 text-text-primary hover:bg-page-bg rounded-md transition-colors";
 
@@ -115,12 +118,10 @@ const Navbar = () => {
 
       {/* Main Navigation */}
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link
-          to="/"
-          className="text-3xl font-bold font-serif text-text-primary"
-        >
-          BRB Art Fusion
+        <Link to="/">
+          <Logo />
         </Link>
+
         <div className="hidden md:flex items-center space-x-8 text-lg font-semibold">
           <NavLink to="/" className={desktopNavLinkClass}>
             Home
@@ -188,7 +189,7 @@ const Navbar = () => {
                           <img
                             src={featuredItems[0].images[0]}
                             alt={featuredItems[0].name}
-                            className="rounded-md object-cover h-48 w-48"
+                            className="rounded-md object-cover h-full w-full"
                           />
                         </Link>
                       </div>
@@ -202,6 +203,7 @@ const Navbar = () => {
             Contact
           </NavLink>
         </div>
+
         <div className="flex items-center space-x-4 text-text-primary">
           <Link
             to="/favorites"
@@ -215,8 +217,8 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-          <Link
-            to="/cart"
+          <button
+            onClick={() => cartDispatch({ type: "OPEN_CART" })}
             aria-label="Shopping Cart"
             className="relative hover:text-brand-accent"
           >
@@ -226,7 +228,7 @@ const Navbar = () => {
                 {cartItems.reduce((acc, item) => acc + item.qty, 0)}
               </span>
             )}
-          </Link>
+          </button>
           <div className="hidden md:block relative" ref={dropdownRef}>
             {userInfo ? (
               <button
@@ -291,6 +293,8 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* --- Fully Functional Mobile Menu --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -326,7 +330,7 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/profile"
-                    className={`${mobileNavLinkClass}`}
+                    className={`${mobileNavLinkClass} text-text-primary`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Profile
@@ -334,7 +338,7 @@ const Navbar = () => {
                   {userInfo.isAdmin && (
                     <Link
                       to="/admin/dashboard"
-                      className={`${mobileNavLinkClass}`}
+                      className={`${mobileNavLinkClass} text-text-primary`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard

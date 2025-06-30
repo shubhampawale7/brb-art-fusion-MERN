@@ -22,6 +22,8 @@ const ProductCard = ({ product, onQuickViewClick }) => {
     if (product.countInStock > 0) {
       cartDispatch({ type: "ADD_TO_CART", payload: { ...product, qty: 1 } });
       toast.success(`${product.name} added to cart!`);
+      // This new line opens the cart drawer automatically
+      cartDispatch({ type: "OPEN_CART" });
     } else {
       toast.error("This product is currently out of stock.");
     }
@@ -30,14 +32,13 @@ const ProductCard = ({ product, onQuickViewClick }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden m-2 group relative border border-transparent hover:shadow-xl transition-shadow duration-300">
       <Link to={`/product/${product._id}`}>
-        <div className="overflow-hidden relative flex justify-center items-center">
+        <div className="overflow-hidden relative">
           <LazyLoadImage
             alt={product.name}
             src={product.images?.[0] || placeholderImage}
             effect="blur"
-            // 2. Use the transparent pixel constant here.
             placeholderSrc={placeholderImage}
-            className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+            className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
           />
 
           <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

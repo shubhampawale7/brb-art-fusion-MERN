@@ -3,6 +3,7 @@ import { createContext, useReducer, useEffect } from "react";
 export const CartContext = createContext();
 
 const initialState = {
+  isCartOpen: false,
   cartItems: localStorage.getItem("cartItems")
     ? JSON.parse(localStorage.getItem("cartItems"))
     : [],
@@ -53,6 +54,11 @@ function cartReducer(state, action) {
         shippingAddress: {},
         paymentMethod: "Razorpay", // Reset to default on clear
       };
+    case "OPEN_CART":
+      return { ...state, isCartOpen: true };
+    case "CLOSE_CART":
+      return { ...state, isCartOpen: false };
+
     default:
       return state;
   }
