@@ -14,19 +14,17 @@ import {
 } from "../controllers/orderController.js";
 import { protect, admin } from "../middlewares/authMiddleware.js";
 
-// --- Admin Only Routes ---
-// We place the most specific routes first.
-router.route("/").get(protect, admin, getAllOrders);
-router.route("/summary").get(protect, admin, getOrderSummary);
+// ADMIN-ONLY ROUTES (Specific text routes come first)
 router.route("/summary/sales-data").get(protect, admin, getSalesData);
+router.route("/summary").get(protect, admin, getOrderSummary);
+router.route("/").get(protect, admin, getAllOrders);
 
-// --- Private User Routes ---
+// USER-SPECIFIC ROUTES
 router.route("/").post(protect, addOrderItems);
 router.route("/myorders").get(protect, getMyOrders);
 router.route("/create-razorpay-order").post(protect, createRazorpayOrder);
 
-// --- Dynamic Routes (with an :id) ---
-// These must come after the specific text-based routes above.
+// DYNAMIC ID ROUTES (These must come last)
 router.route("/:id").get(protect, getOrderById);
 router.route("/:id/pay").put(protect, updateOrderToPaid);
 router.route("/:id/cancel").put(protect, cancelOrder);
