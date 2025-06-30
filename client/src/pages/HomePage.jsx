@@ -5,14 +5,14 @@ import { toast } from "sonner";
 
 // Import all our new section components
 import HeroSection from "../components/home/HeroSection";
-import ShopByCategory from "../components/home/ShopByCategory";
+// import ShopByCategory from "../components/home/ShopByCategory";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import BrandPromise from "../components/home/BrandPromise";
 import Testimonials from "../components/home/Testimonials";
 import Faqs from "../components/home/Faqs";
 import TopCategories from "../components/home/TopCategories";
 import CustomerFavourite from "../components/home/CustomerFavourite";
-import ShopByMetal from "../components/home/ShopByMetal";
+// import ShopByMetal from "../components/home/ShopByMetal";
 import ArtisanStory from "../components/home/ArtisanStory";
 import HandcraftedPromise from "../components/home/HandcraftedPromise";
 import InspirationSection from "../components/home/InspireSection";
@@ -47,8 +47,8 @@ const HomePage = () => {
       <TopCategories />
       <MaterialComparison />
       <BrandPromise />
-      <ShopByCategory />
-      <ShopByMetal />
+      {/* <ShopByCategory /> */}
+      {/* <ShopByMetal /> */}
       <FeaturedProducts products={products.slice(0, 8)} />
 
       <CustomerFavourite />

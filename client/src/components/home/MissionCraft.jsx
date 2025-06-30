@@ -8,14 +8,16 @@ const contentData = [
     superTitle: "01",
     title: "Our Mission",
     text: "With a fervent desire to revive traditional handicrafts, BRB Art Fusion's foundation lies in fostering wellness in everyday lives. We offer an array of distinctive, handcrafted treasures, extending beyond commerce to nurturing a happier, healthier world.",
-    image: "https://images.unsplash.com/photo-1605379649098-b873832c8623?q=80",
+    image:
+      "https://brassglobe.com/cdn/shop/files/DSC2961_4d738505-0ea8-46c2-bd80-82c57af3cfa2.jpg?v=1729168464&width=600",
   },
   {
     id: 2,
     superTitle: "02",
     title: "Crafted by Master Artisans",
     text: "We take pride in preserving the authenticity and originality of our craft. Our artisans blend traditional methods with innovative designs, creating utensils that are not only functional but also beautiful works of art.",
-    image: "https://images.unsplash.com/photo-1616401784845-180844d18104?q=80",
+    image:
+      "https://brassglobe.com/cdn/shop/files/DSC3285.jpg?v=1726561173&width=600",
   },
 ];
 
@@ -88,7 +90,7 @@ const MissionCraft = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="absolute inset-0 w-full h-full object-cover rounded-lg shadow-2xl"
+                className="absolute inset-0 w-full h-full object-contain rounded-lg shadow-2xl"
               />
             </AnimatePresence>
           </div>

@@ -189,7 +189,7 @@ const Navbar = () => {
                           <img
                             src={featuredItems[0].images[0]}
                             alt={featuredItems[0].name}
-                            className="rounded-md object-cover h-full w-full"
+                            className="rounded-md  object-cover h-48 w-48"
                           />
                         </Link>
                       </div>

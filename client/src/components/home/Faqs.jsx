@@ -38,7 +38,7 @@ const Faqs = () => {
           {/* Image Column */}
           <div>
             <img
-              src="https://images.unsplash.com/photo-1596700247446-7769d615cf1b?q=80"
+              src="https://img.freepik.com/premium-photo/rustic-kitchen-shelf-adorned-with-various-brass-utensils-captures-glimpse-into-traditional-culinary-artistry-with-golden-warmth_95891-79547.jpg"
               alt="Brass products on a shelf"
               className="rounded-lg shadow-xl w-full h-full object-cover"
             />

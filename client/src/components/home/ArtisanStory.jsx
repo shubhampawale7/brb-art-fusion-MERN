@@ -16,19 +16,19 @@ const ArtisanStory = () => {
           {/* Image Collage */}
           <div className="grid grid-cols-2 gap-4">
             <img
-              src="https://images.unsplash.com/photo-1616401784845-180844d18104?q=80"
+              src="https://cdn.shopify.com/s/files/1/0733/7676/0095/files/DSC3196_853d2ea0-096b-497e-839b-38a9d7a13206.jpg?v=1727726670"
               alt="Artisan crafting brass"
-              className="rounded-lg shadow-lg object-cover w-full h-96 col-span-2"
+              className="rounded-lg shadow-lg object-left w-full h-96 col-span-2"
             />
             <img
-              src="https://images.unsplash.com/photo-1596700247446-7769d615cf1b?q=80"
+              src="https://brassglobe.com/cdn/shop/files/WhatsApp_Image_2023-11-02_at_10.27.07_AM_2.webp?v=1728568017&width=500"
               alt="Artisan tools"
-              className="rounded-lg shadow-lg object-cover w-full h-64"
+              className="rounded-lg shadow-lg object-fill w-full h-64"
             />
             <img
-              src="https://images.unsplash.com/photo-1605379649098-b873832c8623?q=80"
+              src="https://brassglobe.com/cdn/shop/files/C1951_out0001.png?v=1727924506&width=500"
               alt="Finished brass products"
-              className="rounded-lg shadow-lg object-cover w-full h-64"
+              className="rounded-lg shadow-lg object-left-bottom w-full h-64"
             />
           </div>
 

@@ -7,21 +7,23 @@ import { motion } from "framer-motion";
 const getCategoryImage = (categoryName) => {
   const images = {
     "Brass Murtis":
-      "https://images.unsplash.com/photo-1617347398863-2a366a75a7b8?q=80",
+      "https://res.cloudinary.com/dfrjloqgb/image/upload/v1751297529/brb-art-fusion/di8ba1jhuq3htttdiom3.jpg",
     "Pooja Items":
-      "https://images.unsplash.com/photo-1605379649098-b873832c8623?q=80",
+      "https://res.cloudinary.com/dfrjloqgb/image/upload/v1751297327/brb-art-fusion/n1gxjwqbinmelve2nsvb.jpg",
     Drinkware:
       "https://images.unsplash.com/photo-1567082424799-a8647e335e44?q=80",
     Gifting:
       "https://images.unsplash.com/photo-1589913963837-1693636f8697?q=80",
     Kitchenware:
       "https://images.unsplash.com/photo-1581750242215-37655859e3b9?q=80",
+
     "Wall Decor":
       "https://images.unsplash.com/photo-1618693427179-8c43c24cee18?q=80",
+
     "Decorative Items":
-      "https://images.unsplash.com/photo-1599409353925-e8224433189e?q=80",
+      "https://res.cloudinary.com/dfrjloqgb/image/upload/v1751296602/brb-art-fusion/vkwhlhp85lkgymbp2gev.jpg",
     Lanterns:
-      "https://images.unsplash.com/photo-1516484623233-366f7d084a23?q=80",
+      "https://res.cloudinary.com/dfrjloqgb/image/upload/v1751296732/brb-art-fusion/jgivspzhfntgyjhriszy.jpg",
   };
   return images[categoryName] || images["Decorative Items"]; // Fallback image
 };
