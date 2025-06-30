@@ -45,6 +45,7 @@ import OrderListPage from "./pages/admin/OrderListPage";
 import UserListPage from "./pages/admin/UserListPage";
 import PaymentPage from "./pages/PaymentPage";
 import OrderDetailPageAdmin from "./pages/admin/OrderDetailPageAdmin";
+import OurStoryPage from "./pages/OurStoryPage";
 
 function App() {
   const { state, dispatch } = useContext(CartContext);
@@ -93,6 +94,7 @@ function App() {
                 <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/placeorder" element={<PlaceOrderPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/our-story" element={<OurStoryPage />} />
                 <Route path="/order/:id" element={<OrderDetailPage />} />
                 <Route path="/favorites" element={<FavoritesPage />} />
               </Route>

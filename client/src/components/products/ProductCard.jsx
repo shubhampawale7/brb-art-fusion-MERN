@@ -29,7 +29,7 @@ const ProductCard = ({ product, onQuickViewClick }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden m-2 group relative border border-transparent hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden m-2 p-4 group relative border border-transparent hover:shadow-xl transition-shadow duration-300">
       <Link to={`/product/${product._id}`}>
         <div className="h-64 overflow-hidden relative flex items-center justify-center bg-gray-100">
           <LazyLoadImage

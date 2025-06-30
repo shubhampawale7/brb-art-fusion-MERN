@@ -50,7 +50,7 @@ const ArtisanStory = () => {
               customs while redefining modern kitchenware.
             </p>
             <Link
-              to="/contact"
+              to="/our-story"
               className="mt-8 inline-block bg-brand-gold text-white px-8 py-3 rounded-md font-semibold hover:bg-opacity-90 transition-transform hover:scale-105"
             >
               Our Story
