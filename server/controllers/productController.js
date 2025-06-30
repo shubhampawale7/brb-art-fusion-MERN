@@ -13,17 +13,21 @@ const getProducts = async (req, res) => {
 
   const category = req.query.category ? { category: req.query.category } : {};
 
-  // --- New Price Filter Logic ---
   const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
   const maxPrice = req.query.maxPrice
     ? Number(req.query.maxPrice)
     : Number.MAX_SAFE_INTEGER;
 
   const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
-  // --- End of New Logic ---
+
+  let sortOrder = {};
+  if (req.query.sort === "latest") {
+    sortOrder = { createdAt: -1 }; // Newest first
+  } else if (req.query.sort === "toprated") {
+    sortOrder = { rating: -1 }; // Highest rating first
+  }
 
   try {
-    // Apply all filters to the count and find queries
     const count = await Product.countDocuments({
       ...keyword,
       ...category,
@@ -34,12 +38,27 @@ const getProducts = async (req, res) => {
       ...category,
       ...priceFilter,
     })
+      .sort(sortOrder)
       .limit(pageSize)
       .skip(pageSize * (page - 1));
 
     res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching products" });
+    res.status(500);
+    throw new Error("Error fetching products");
+  }
+};
+
+// @desc    Get a single product by ID
+// @route   GET /api/products/:id
+// @access  Public
+const getProductById = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (product) {
+    res.json(product);
+  } else {
+    res.status(404);
+    throw new Error("Product not found");
   }
 };
 
@@ -47,32 +66,8 @@ const getProducts = async (req, res) => {
 // @route   GET /api/products/categories
 // @access  Public
 const getProductCategories = async (req, res) => {
-  try {
-    const categories = await Product.find().distinct("category");
-    res.json(categories);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching categories" });
-  }
-};
-// @desc    Fetch a single product by ID
-// @route   GET /api/products/:id
-// @access  Public
-const getProductById = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404);
-      throw new Error("Product not found");
-    }
-  } catch (error) {
-    // Pass the error to our custom error handler
-    // If the ID format is incorrect, mongoose will throw an error caught here
-    res.status(404);
-    throw new Error("Product not found");
-  }
+  const categories = await Product.find().distinct("category");
+  res.json(categories);
 };
 
 // @desc    Create a product
@@ -82,12 +77,15 @@ const createProduct = async (req, res) => {
   const product = new Product({
     name: "Sample Name",
     price: 0,
-    user: req.user._id, // from protect middleware
+    user: req.user._id,
     images: ["/images/sample.jpg"],
     category: "Sample Category",
     countInStock: 0,
     numReviews: 0,
     description: "Sample description",
+    dimensions: "N/A",
+    weight: "N/A",
+    material: "100% Brass",
   });
 
   const createdProduct = await product.save();
@@ -98,23 +96,53 @@ const createProduct = async (req, res) => {
 // @route   PUT /api/products/:id
 // @access  Private/Admin
 const updateProduct = async (req, res) => {
-  const { name, price, description, images, category, countInStock } = req.body;
+  try {
+    const {
+      name,
+      price,
+      description,
+      images,
+      videos,
+      category,
+      countInStock,
+      dimensions,
+      weight,
+      material,
+    } = req.body;
 
-  const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id);
 
-  if (product) {
-    product.name = name;
-    product.price = price;
-    product.description = description;
-    product.images = images;
-    product.category = category;
-    product.countInStock = countInStock;
+    if (product) {
+      // Add specific validation checks before attempting to save
+      if (!name || !category || !description) {
+        res.status(400);
+        throw new Error("Name, category, and description are required fields.");
+      }
+      if (!images || images.length === 0) {
+        res.status(400);
+        throw new Error("At least one product image is required.");
+      }
 
-    const updatedProduct = await product.save();
-    res.json(updatedProduct);
-  } else {
-    res.status(404);
-    throw new Error("Product not found");
+      product.name = name;
+      product.price = Number(price);
+      product.description = description;
+      product.images = images;
+      product.videos = videos || [];
+      product.category = category;
+      product.countInStock = Number(countInStock);
+      product.dimensions = dimensions;
+      product.weight = weight;
+      product.material = material;
+
+      const updatedProduct = await product.save();
+      res.json(updatedProduct);
+    } else {
+      res.status(404);
+      throw new Error("Product not found");
+    }
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
   }
 };
 
@@ -123,15 +151,14 @@ const updateProduct = async (req, res) => {
 // @access  Private/Admin
 const deleteProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
-
   if (product) {
-    await product.deleteOne(); // Mongoose v6+ uses deleteOne()
+    await product.deleteOne();
     res.json({ message: "Product removed" });
   } else {
     res.status(404);
     throw new Error("Product not found");
   }
-}; // ... existing functions ...
+};
 
 // @desc    Create a new review
 // @route   POST /api/products/:id/reviews
@@ -144,25 +171,21 @@ const createProductReview = async (req, res) => {
     const alreadyReviewed = product.reviews.find(
       (r) => r.user.toString() === req.user._id.toString()
     );
-
     if (alreadyReviewed) {
       res.status(400);
       throw new Error("Product already reviewed");
     }
-
     const review = {
       name: req.user.name,
       rating: Number(rating),
       comment,
       user: req.user._id,
     };
-
     product.reviews.push(review);
     product.numReviews = product.reviews.length;
     product.rating =
       product.reviews.reduce((acc, item) => item.rating + acc, 0) /
       product.reviews.length;
-
     await product.save();
     res.status(201).json({ message: "Review added" });
   } else {
@@ -171,13 +194,12 @@ const createProductReview = async (req, res) => {
   }
 };
 
-// Add createProductReview to the exports
 export {
   getProducts,
-  getProductCategories,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
   createProductReview,
+  getProductCategories,
 };

@@ -7,21 +7,28 @@ import {
   updateProduct,
   deleteProduct,
   createProductReview,
-  getProductCategories, // <-- Import new function
+  getProductCategories,
 } from "../controllers/productController.js";
 import { protect, admin } from "../middlewares/authMiddleware.js";
 
-// Public routes
-router.route("/").get(getProducts);
-router.route("/categories").get(getProductCategories); // <-- New route
-router.route("/:id").get(getProductById);
+// --- Grouped & Organized Routes ---
 
-// Private route for reviews
+// --- Base Route ---
+// GET is public, POST requires a logged-in admin.
+router.route("/").get(getProducts).post(protect, admin, createProduct); // This line ensures only admins can create products
+
+// --- Categories Route (Public) ---
+router.route("/categories").get(getProductCategories);
+
+// --- Routes by Specific Product ID ---
+router
+  .route("/:id")
+  .get(getProductById)
+  .put(protect, admin, updateProduct)
+  .delete(protect, admin, deleteProduct);
+
+// --- Review Route ---
+// Only a logged-in user can create a review
 router.route("/:id/reviews").post(protect, createProductReview);
-
-// Admin only routes
-router.route("/").post(protect, admin, createProduct);
-router.route("/:id").put(protect, admin, updateProduct);
-router.route("/:id").delete(protect, admin, deleteProduct);
 
 export default router;

@@ -54,7 +54,7 @@ const ProductEditPage = () => {
       }
     };
     fetchProduct();
-  }, [productId]);
+  }, [productId, navigate]);
 
   const uploadFileHandler = async (e, fileType) => {
     const file = e.target.files[0];
@@ -71,7 +71,6 @@ const ProductEditPage = () => {
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      // FIXED: The URL should be '/upload', not '/api/upload', as the base URL is already '/api'
       const { data } = await API.post("/upload", formData, config);
 
       if (fileType === "image") setImages([...images, data.url]);
@@ -94,14 +93,15 @@ const ProductEditPage = () => {
     e.preventDefault();
     setLoadingUpdate(true);
     try {
+      // --- FIX: Convert price and stock to Numbers before sending ---
       const productData = {
         name,
-        price,
+        price: Number(price),
         description,
         images,
         videos,
         category,
-        countInStock,
+        countInStock: Number(countInStock),
         dimensions,
         weight,
         material,
@@ -135,240 +135,250 @@ const ProductEditPage = () => {
       <Helmet>
         <title>Edit Product - {name}</title>
       </Helmet>
-      <Link
-        to="/admin/productlist"
-        className="text-brand-accent hover:underline mb-4 inline-block"
-      >
-        &larr; Go Back to Product List
-      </Link>
-      <motion.div
-        className="bg-white p-8 rounded-lg shadow-xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-3xl font-bold mb-6 text-center">Edit Product</h1>
-        <form onSubmit={submitHandler} className="space-y-6">
-          {/* Improved grid layout for form fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1">
-                Product Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium mb-1">
-                Price (₹)
-              </label>
-              <input
-                id="price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="category"
-                className="block text-sm font-medium mb-1"
-              >
-                Category
-              </label>
-              <input
-                id="category"
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="countInStock"
-                className="block text-sm font-medium mb-1"
-              >
-                Count In Stock
-              </label>
-              <input
-                id="countInStock"
-                type="number"
-                value={countInStock}
-                onChange={(e) => setCountInStock(e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="dimensions"
-                className="block text-sm font-medium mb-1"
-              >
-                Dimensions
-              </label>
-              <input
-                id="dimensions"
-                type="text"
-                placeholder="e.g., 15cm x 10cm"
-                value={dimensions}
-                onChange={(e) => setDimensions(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="weight"
-                className="block text-sm font-medium mb-1"
-              >
-                Weight
-              </label>
-              <input
-                id="weight"
-                type="text"
-                placeholder="e.g., 1.2kg"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="material"
-              className="block text-sm font-medium mb-1"
-            >
-              Material
-            </label>
-            <input
-              id="material"
-              type="text"
-              value={material}
-              onChange={(e) => setMaterial(e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium mb-1"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              rows="5"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              className={inputClass}
-            ></textarea>
-          </div>
-
-          {/* Polished Image Upload Section */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Images
-            </label>
-            <div className="flex flex-wrap gap-4 mb-2 min-h-[6rem] p-2 border rounded-md bg-page-bg">
-              {images.map((image, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={image}
-                    alt={`Product view ${index + 1}`}
-                    className="w-24 h-24 object-cover rounded-md shadow-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(image)}
-                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none"
-                  >
-                    <FaTimes size={10} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <label
-              htmlFor="image-upload"
-              className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 text-text-primary rounded-md font-semibold text-sm hover:bg-gray-300"
-            >
-              <FaUpload className="mr-2" /> Upload Image
-            </label>
-            <input
-              id="image-upload"
-              type="file"
-              onChange={(e) => uploadFileHandler(e, "image")}
-              className="hidden"
-            />
-          </div>
-
-          {/* Polished Video Upload Section */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Videos
-            </label>
-            <div className="flex flex-wrap gap-4 mb-2 min-h-[6rem] p-2 border rounded-md bg-page-bg">
-              {videos.map((video, index) => (
-                <div
-                  key={index}
-                  className="relative w-24 h-24 bg-black rounded-md flex items-center justify-center"
+      <div className="container mx-auto px-6 py-8">
+        <Link
+          to="/admin/productlist"
+          className="text-brand-accent hover:underline mb-4 inline-block"
+        >
+          &larr; Go Back to Product List
+        </Link>
+        <motion.div
+          className="bg-white p-8 rounded-lg shadow-xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-3xl font-bold mb-6 text-center">Edit Product</h1>
+          <form onSubmit={submitHandler} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium mb-1"
                 >
-                  <video src={video} className="max-w-full max-h-full"></video>
-                  <button
-                    type="button"
-                    onClick={() => removeVideo(video)}
-                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none"
+                  Product Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="price"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Price (₹)
+                </label>
+                <input
+                  id="price"
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Category
+                </label>
+                <input
+                  id="category"
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="countInStock"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Count In Stock
+                </label>
+                <input
+                  id="countInStock"
+                  type="number"
+                  value={countInStock}
+                  onChange={(e) => setCountInStock(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="dimensions"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Dimensions
+                </label>
+                <input
+                  id="dimensions"
+                  type="text"
+                  placeholder="e.g., 15cm x 10cm"
+                  value={dimensions}
+                  onChange={(e) => setDimensions(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="weight"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Weight
+                </label>
+                <input
+                  id="weight"
+                  type="text"
+                  placeholder="e.g., 1.2kg"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="material"
+                className="block text-sm font-medium mb-1"
+              >
+                Material
+              </label>
+              <input
+                id="material"
+                type="text"
+                value={material}
+                onChange={(e) => setMaterial(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                rows="5"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                className={inputClass}
+              ></textarea>
+            </div>
+
+            {/* Image Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Images
+              </label>
+              <div className="flex flex-wrap gap-4 mb-2 min-h-[6rem] p-2 border rounded-md bg-page-bg">
+                {images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={image}
+                      alt={`Product view ${index + 1}`}
+                      className="w-24 h-24 object-cover rounded-md shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(image)}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none"
+                    >
+                      <FaTimes size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <label
+                htmlFor="image-upload"
+                className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 text-text-primary rounded-md font-semibold text-sm hover:bg-gray-300"
+              >
+                <FaUpload className="mr-2" /> Upload Image
+              </label>
+              <input
+                id="image-upload"
+                type="file"
+                onChange={(e) => uploadFileHandler(e, "image")}
+                className="hidden"
+              />
+            </div>
+
+            {/* Video Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Videos
+              </label>
+              <div className="flex flex-wrap gap-4 mb-2 min-h-[6rem] p-2 border rounded-md bg-page-bg">
+                {videos.map((video, index) => (
+                  <div
+                    key={index}
+                    className="relative w-24 h-24 bg-black rounded-md flex items-center justify-center"
                   >
-                    <FaTimes size={10} />
-                  </button>
-                </div>
-              ))}
+                    <video
+                      src={video}
+                      className="max-w-full max-h-full"
+                    ></video>
+                    <button
+                      type="button"
+                      onClick={() => removeVideo(video)}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none"
+                    >
+                      <FaTimes size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <label
+                htmlFor="video-upload"
+                className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 text-text-primary rounded-md font-semibold text-sm hover:bg-gray-300"
+              >
+                <FaUpload className="mr-2" /> Upload Video
+              </label>
+              <input
+                id="video-upload"
+                type="file"
+                accept="video/*"
+                onChange={(e) => uploadFileHandler(e, "video")}
+                className="hidden"
+              />
             </div>
-            <label
-              htmlFor="video-upload"
-              className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 text-text-primary rounded-md font-semibold text-sm hover:bg-gray-300"
-            >
-              <FaUpload className="mr-2" /> Upload Video
-            </label>
-            <input
-              id="video-upload"
-              type="file"
-              accept="video/*"
-              onChange={(e) => uploadFileHandler(e, "video")}
-              className="hidden"
-            />
-          </div>
 
-          {loadingUpload && (
-            <div className="flex justify-center my-2">
-              <ClipLoader size={25} />
+            {loadingUpload && (
+              <div className="flex justify-center my-2">
+                <ClipLoader size={25} />
+              </div>
+            )}
+
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loadingUpdate || loadingUpload}
+                className="w-full bg-brand-accent text-white py-3 rounded-md hover:bg-opacity-90 transition font-semibold flex justify-center items-center disabled:bg-gray-400"
+              >
+                {loadingUpdate ? (
+                  <ClipLoader size={20} color="white" />
+                ) : (
+                  "Update Product"
+                )}
+              </button>
             </div>
-          )}
-
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={loadingUpdate || loadingUpload}
-              className="w-full bg-brand-accent text-white py-3 rounded-md hover:bg-opacity-90 transition font-semibold flex justify-center items-center disabled:bg-gray-400"
-            >
-              {loadingUpdate ? (
-                <ClipLoader size={20} color="white" />
-              ) : (
-                "Update Product"
-              )}
-            </button>
-          </div>
-        </form>
-      </motion.div>
+          </form>
+        </motion.div>
+      </div>
     </>
   );
 };

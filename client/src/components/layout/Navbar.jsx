@@ -8,14 +8,16 @@ import {
   FaTimes,
   FaPhone,
   FaEnvelope,
+  FaChevronDown,
 } from "react-icons/fa";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Contexts
+// Contexts & API
 import { CartContext } from "../../context/CartContext";
 import { AuthContext } from "../../context/AuthContext";
 import { WishlistContext } from "../../context/WishlistContext";
+import API from "../../services/api";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,26 +26,43 @@ const Navbar = () => {
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const [navCategories, setNavCategories] = useState([]);
+  const [featuredItems, setFeaturedItems] = useState([]);
+
   const { state: cartState, dispatch: cartDispatch } = useContext(CartContext);
   const { cartItems } = cartState;
-
   const { state: authState, dispatch: authDispatch } = useContext(AuthContext);
   const { userInfo } = authState;
-
-  // Get wishlist items from the WishlistContext
   const { state: wishlistState, dispatch: wishlistDispatch } =
     useContext(WishlistContext);
   const { wishlistItems } = wishlistState;
 
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        const categoriesPromise = API.get("/products/categories");
+        const featuredPromise = API.get("/products?sort=latest&limit=2");
+        const [categoriesRes, featuredRes] = await Promise.all([
+          categoriesPromise,
+          featuredPromise,
+        ]);
+        setNavCategories(categoriesRes.data);
+        setFeaturedItems(featuredRes.data.products);
+      } catch (error) {
+        console.error("Failed to fetch menu data", error);
+      }
+    };
+    fetchMenuData();
+  }, []);
+
   const logoutHandler = () => {
     authDispatch({ type: "USER_LOGOUT" });
     cartDispatch({ type: "CART_CLEAR" });
-    wishlistDispatch({ type: "CLEAR_WISHLIST" }); // Clear wishlist on logout
+    wishlistDispatch({ type: "CLEAR_WISHLIST" });
     toast.success("You have been logged out successfully.");
     navigate("/login");
   };
 
-  // Click outside to close user dropdown
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -54,28 +73,18 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRef]);
 
-  const categories = [
-    "Brass Murtis",
-    "Lanterns",
-    "Decorative Items",
-    "Pooja Items",
-    "Wall Decor",
-  ];
-
   const desktopNavLinkClass = ({ isActive }) =>
-    `transition-colors duration-300 ${
+    `flex items-center gap-1.5 transition-colors duration-300 ${
       isActive
         ? "text-brand-accent"
         : "text-text-primary hover:text-brand-accent"
     }`;
-
   const mobileNavLinkClass = ({ isActive }) =>
     `block py-2 px-3 rounded text-lg ${
       isActive
         ? "bg-brand-accent text-white"
         : "text-text-primary hover:bg-page-bg"
     }`;
-
   const megaMenuLinkClass =
     "block p-2 text-text-primary hover:bg-page-bg rounded-md transition-colors";
 
@@ -112,8 +121,6 @@ const Navbar = () => {
         >
           BRB Art Fusion
         </Link>
-
-        {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center space-x-8 text-lg font-semibold">
           <NavLink to="/" className={desktopNavLinkClass}>
             Home
@@ -125,6 +132,12 @@ const Navbar = () => {
           >
             <NavLink to="/shop" className={desktopNavLinkClass}>
               Shop
+              <FaChevronDown
+                className={`transition-transform duration-200 ${
+                  megaMenuOpen ? "rotate-180" : ""
+                }`}
+                size={12}
+              />
             </NavLink>
             <AnimatePresence>
               {megaMenuOpen && (
@@ -133,17 +146,19 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className="absolute left-0 right-0 top-full mt-0 bg-white shadow-lg border-t"
+                  style={{ zIndex: 100 }}
                 >
-                  <div className="container mx-auto grid grid-cols-4 gap-8 p-8">
-                    <div className="space-y-3">
-                      <h3 className="font-bold text-text-primary mb-2">
+                  <div className="container mx-auto grid grid-cols-4 gap-8 p-8 max-h-[450px] overflow-hidden">
+                    <div className="space-y-3 pr-4 overflow-y-auto">
+                      <h3 className="font-bold text-text-primary mb-2 sticky top-0 bg-white pb-2">
                         Shop By Category
                       </h3>
-                      {categories.map((cat) => (
+                      {navCategories.map((cat) => (
                         <Link
                           key={cat}
                           to={`/shop/category/${cat}`}
                           className={megaMenuLinkClass}
+                          onClick={() => setMegaMenuOpen(false)}
                         >
                           {cat}
                         </Link>
@@ -151,22 +166,33 @@ const Navbar = () => {
                     </div>
                     <div className="space-y-3">
                       <h3 className="font-bold text-text-primary mb-2">
-                        Featured
+                        New Arrivals
                       </h3>
-                      <Link to="/product/some-id" className={megaMenuLinkClass}>
-                        Ganesha Collection
-                      </Link>
-                      <Link to="/product/some-id" className={megaMenuLinkClass}>
-                        Diwali Specials
-                      </Link>
+                      {featuredItems.map((item) => (
+                        <Link
+                          key={item._id}
+                          to={`/product/${item._id}`}
+                          className={megaMenuLinkClass}
+                          onClick={() => setMegaMenuOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
                     </div>
-                    <div>
-                      <img
-                        src="https://images.unsplash.com/photo-1617347398863-2a366a75a7b8?q=80"
-                        alt="Featured Product"
-                        className="rounded-md"
-                      />
-                    </div>
+                    {featuredItems.length > 0 && (
+                      <div className="col-span-2 h-full">
+                        <Link
+                          to={`/product/${featuredItems[0]._id}`}
+                          onClick={() => setMegaMenuOpen(false)}
+                        >
+                          <img
+                            src={featuredItems[0].images[0]}
+                            alt={featuredItems[0].name}
+                            className="rounded-md object-cover h-48 w-48"
+                          />
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -176,10 +202,7 @@ const Navbar = () => {
             Contact
           </NavLink>
         </div>
-
-        {/* Icons and User/Mobile Menu */}
         <div className="flex items-center space-x-4 text-text-primary">
-          {/* Favorites link with new badge */}
           <Link
             to="/favorites"
             aria-label="Favorites"
@@ -192,7 +215,6 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-
           <Link
             to="/cart"
             aria-label="Shopping Cart"
@@ -205,7 +227,6 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-
           <div className="hidden md:block relative" ref={dropdownRef}>
             {userInfo ? (
               <button
@@ -231,7 +252,7 @@ const Navbar = () => {
                   exit={{ opacity: 0, y: -10 }}
                   className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5"
                 >
-                  <div className="px-4 py-3 border-b">
+                  <div className="px-4 py-3 border-b border-page-bg">
                     <p className="text-sm font-medium text-text-primary truncate">
                       {userInfo.name}
                     </p>
@@ -260,19 +281,16 @@ const Navbar = () => {
               )}
             </AnimatePresence>
           </div>
-
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-2xl"
             >
-              <FaBars />
+              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
             </button>
           </div>
         </div>
       </nav>
-
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -303,7 +321,7 @@ const Navbar = () => {
               >
                 Contact
               </NavLink>
-              <div className="border-t my-2"></div>
+              <div className="border-t my-2 border-page-bg"></div>
               {userInfo ? (
                 <>
                   <Link

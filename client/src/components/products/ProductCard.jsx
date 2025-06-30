@@ -1,54 +1,91 @@
 import { Link } from "react-router-dom";
-import ParallaxTilt from "react-parallax-tilt";
-import FavoriteButton from "./FavoriteButton";
+import { FaShoppingCart, FaStar } from "react-icons/fa";
+import { motion } from "framer-motion";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 
-const placeholderImage = "/images/placeholder.png";
+import FavoriteButton from "./FavoriteButton";
+import { useContext } from "react";
+import { CartContext } from "../../context/CartContext";
+import { toast } from "sonner";
+
+const placeholderImage =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 const ProductCard = ({ product, onQuickViewClick }) => {
+  const { dispatch: cartDispatch } = useContext(CartContext);
+
+  const addToCartHandler = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (product.countInStock > 0) {
+      cartDispatch({ type: "ADD_TO_CART", payload: { ...product, qty: 1 } });
+      toast.success(`${product.name} added to cart!`);
+    } else {
+      toast.error("This product is currently out of stock.");
+    }
+  };
+
   return (
-    <ParallaxTilt tiltMaxAngleX={5} tiltMaxAngleY={5} glareEnable={false}>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden m-2 group relative">
-        <FavoriteButton product={product} />
+    <div className="bg-white rounded-lg shadow-md overflow-hidden m-2 group relative border border-transparent hover:shadow-xl transition-shadow duration-300">
+      <Link to={`/product/${product._id}`}>
+        <div className="overflow-hidden relative flex justify-center items-center">
+          <LazyLoadImage
+            alt={product.name}
+            src={product.images?.[0] || placeholderImage}
+            effect="blur"
+            // 2. Use the transparent pixel constant here.
+            placeholderSrc={placeholderImage}
+            className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+          />
 
-        <Link to={`/product/${product._id}`}>
-          <div className="overflow-hidden relative">
-            <LazyLoadImage
-              alt={product.name}
-              src={product.images[0]}
-              effect="blur"
-              placeholderSrc={placeholderImage}
-              className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
-            />
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <FavoriteButton product={product} />
+          </div>
 
-            {/* --- CORRECTED PART --- */}
-            {/* Only render the Quick View button if the onQuickViewClick function exists */}
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 p-2 flex justify-center gap-2"
+            initial={{ y: "100%", opacity: 0 }}
+            whileHover={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          >
+            <button
+              onClick={addToCartHandler}
+              className="bg-brand-accent text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-opacity-90"
+            >
+              <FaShoppingCart />
+            </button>
             {onQuickViewClick && (
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevent navigating to product page
-                    onQuickViewClick(); // Open the modal
-                  }}
-                  className="text-white bg-brand-accent px-4 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  Quick View
-                </button>
-              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onQuickViewClick();
+                }}
+                className="text-white bg-text-primary px-4 py-2 rounded-md font-semibold text-sm hover:bg-opacity-80"
+              >
+                Quick View
+              </button>
             )}
-          </div>
-          <div className="p-4 text-center">
-            <h3 className="text-lg font-serif font-bold text-text-primary truncate">
-              {product.name}
-            </h3>
-            <p className="text-xl text-brand-gold mt-2">
-              ₹{product.price.toFixed(2)}
+          </motion.div>
+        </div>
+
+        <div className="p-4 text-center">
+          <h3 className="text-lg font-serif font-bold text-text-primary truncate">
+            {product.name}
+          </h3>
+          <div className="flex justify-center items-center gap-4 mt-2">
+            <p className="text-xl text-text-secondary">
+              ₹{product.price?.toFixed(2)}
             </p>
+            <div className="flex items-center text-sm text-gray-500">
+              <FaStar className="text-yellow-400 mr-1" />
+              <span>{product.rating?.toFixed(1)}</span>
+            </div>
           </div>
-        </Link>
-      </div>
-    </ParallaxTilt>
+        </div>
+      </Link>
+    </div>
   );
 };
 
