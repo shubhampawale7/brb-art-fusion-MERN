@@ -4,6 +4,15 @@ import "dotenv/config";
 import cors from "cors";
 import connectDB from "./config/db.js";
 
+// Route Imports
+import userRoutes from "./routes/userRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import articleRoutes from "./routes/articleRoutes.js";
+
 // Middleware Imports
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 
@@ -16,78 +25,37 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- Mount All API Routes with Debug Try/Catch ---
-const mountRoutes = async () => {
-  try {
-    const userRoutes = (await import("./routes/userRoutes.js")).default;
-    app.use("/api/users", userRoutes);
-  } catch (err) {
-    console.error("❌ Crash in userRoutes.js:", err);
-  }
-
-  try {
-    const productRoutes = (await import("./routes/productRoutes.js")).default;
-    app.use("/api/products", productRoutes);
-  } catch (err) {
-    console.error("❌ Crash in productRoutes.js:", err);
-  }
-
-  try {
-    const contactRoutes = (await import("./routes/contactRoutes.js")).default;
-    app.use("/api/contact", contactRoutes);
-  } catch (err) {
-    console.error("❌ Crash in contactRoutes.js:", err);
-  }
-
-  try {
-    const orderRoutes = (await import("./routes/orderRoutes.js")).default;
-    app.use("/api/orders", orderRoutes);
-  } catch (err) {
-    console.error("❌ Crash in orderRoutes.js:", err);
-  }
-
-  try {
-    const wishlistRoutes = (await import("./routes/wishlistRoutes.js")).default;
-    app.use("/api/wishlist", wishlistRoutes);
-  } catch (err) {
-    console.error("❌ Crash in wishlistRoutes.js:", err);
-  }
-
-  try {
-    const uploadRoutes = (await import("./routes/uploadRoutes.js")).default;
-    app.use("/api/upload", uploadRoutes);
-  } catch (err) {
-    console.error("❌ Crash in uploadRoutes.js:", err);
-  }
-
-  try {
-    const articleRoutes = (await import("./routes/articleRoutes.js")).default;
-    app.use("/api/articles", articleRoutes);
-  } catch (err) {
-    console.error("❌ Crash in articleRoutes.js:", err);
-  }
-};
-
-// Call the async route mounting
-await mountRoutes();
+// --- Mount All API Routes ---
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/articles", articleRoutes);
 
 // --- Deployment Configuration ---
 if (process.env.NODE_ENV === "production") {
   const __dirname = path.resolve();
+  // Set the frontend build folder as a static folder
   app.use(express.static(path.join(__dirname, "/client/dist")));
-  app.get("/*", (req, res) =>
+
+  // For any route that is not an API route, serve the frontend's index.html
+  app.get("*", (req, res) =>
     res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
   );
 } else {
+  // In development, just have a simple root route
   app.get("/", (req, res) => {
     res.send("API is running...");
   });
 }
+// --- End of Deployment Configuration ---
 
-// --- Error Handling ---
+// --- Custom Error Handling Middleware ---
 app.use(notFound);
 app.use(errorHandler);
 
-// --- Start Server ---
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
