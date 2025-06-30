@@ -6,7 +6,13 @@ import Slider from "react-slick";
 import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
-import { FaHeart, FaShoppingCart, FaStar } from "react-icons/fa";
+import {
+  FaHeart,
+  FaShoppingCart,
+  FaStar,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
@@ -14,10 +20,37 @@ import API from "../services/api";
 import FavoriteButton from "../components/products/FavoriteButton";
 import ProductCard from "../components/products/ProductCard";
 
-// Import styles for libraries
+// Import styles
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "react-photo-view/dist/react-photo-view.css";
+
+// Custom Arrow Components for the Slider
+function NextArrow(props) {
+  const { className, style, onClick } = props;
+  return (
+    <div
+      className={`${className} !flex items-center justify-center bg-white/50 hover:bg-white/80 rounded-full w-10 h-10 shadow-md`}
+      style={{ ...style, right: "15px", zIndex: 10 }}
+      onClick={onClick}
+    >
+      <FaChevronRight className="text-black" />
+    </div>
+  );
+}
+
+function PrevArrow(props) {
+  const { className, style, onClick } = props;
+  return (
+    <div
+      className={`${className} !flex items-center justify-center bg-white/50 hover:bg-white/80 rounded-full w-10 h-10 shadow-md`}
+      style={{ ...style, left: "15px", zIndex: 10 }}
+      onClick={onClick}
+    >
+      <FaChevronLeft className="text-black" />
+    </div>
+  );
+}
 
 const ProductDetailPage = () => {
   const { id: productId } = useParams();
@@ -46,7 +79,7 @@ const ProductDetailPage = () => {
         setRelatedProducts(
           relatedData.products
             .filter((p) => p._id !== productData._id)
-            .slice(0, 8) // Get up to 8 related products
+            .slice(0, 8)
         );
       }
     } catch (error) {
@@ -64,12 +97,10 @@ const ProductDetailPage = () => {
   const addToCartHandler = () => {
     const existItem = cartState.cartItems.find((x) => x._id === product._id);
     const newQty = existItem ? existItem.qty + qty : qty;
-
     if (product.countInStock < newQty) {
       toast.error("Sorry, this product is out of stock");
       return;
     }
-
     cartDispatch({
       type: "ADD_TO_CART",
       payload: { ...product, qty },
@@ -93,7 +124,7 @@ const ProductDetailPage = () => {
         }
       );
       toast.success("Review submitted successfully!");
-      fetchProductData(); // Refetch product data to show the new review
+      fetchProductData();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to submit review.");
     } finally {
@@ -110,12 +141,14 @@ const ProductDetailPage = () => {
     slidesToShow: 1,
     slidesToScroll: 1,
     arrows: true,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
     customPaging: (i) => (
-      <div className="mt-2">
+      <div className="mt-4">
         <img
           src={product?.images[i]}
           alt=""
-          className="w-20 h-20 object-cover rounded-md border-2 border-transparent hover:border-brand-accent"
+          className="w-24 h-24 object-cover rounded-md border-2 border-transparent hover:border-brand-accent cursor-pointer"
         />
       </div>
     ),
@@ -168,24 +201,26 @@ const ProductDetailPage = () => {
         transition={{ duration: 0.5 }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <PhotoProvider>
-            <Slider {...mainSliderSettings}>
-              {product.images.map((image, index) => (
-                <div
-                  key={index}
-                  className="cursor-pointer outline-none focus:outline-none"
-                >
-                  <PhotoView src={image}>
-                    <img
-                      src={image}
-                      alt={`${product.name} - view ${index + 1}`}
-                      className="w-full h-auto max-h-[550px] object-contain rounded-lg"
-                    />
-                  </PhotoView>
-                </div>
-              ))}
-            </Slider>
-          </PhotoProvider>
+          <div className="relative">
+            <PhotoProvider>
+              <Slider {...mainSliderSettings} key={product.images.length}>
+                {product.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className="cursor-pointer outline-none focus:outline-none"
+                  >
+                    <PhotoView src={image}>
+                      <img
+                        src={image}
+                        alt={`${product.name} - view ${index + 1}`}
+                        className="w-full h-auto max-h-[550px] object-contain rounded-lg"
+                      />
+                    </PhotoView>
+                  </div>
+                ))}
+              </Slider>
+            </PhotoProvider>
+          </div>
 
           <div className="flex flex-col space-y-5">
             <h1 className="text-5xl font-bold font-serif text-text-primary">
@@ -209,7 +244,6 @@ const ProductDetailPage = () => {
             <p className="text-4xl font-sans font-bold text-brand-accent">
               ₹{product.price.toFixed(2)}
             </p>
-
             <div className="border-t pt-4 space-y-6 text-text-secondary leading-relaxed">
               <p>{product.description}</p>
               <div>
@@ -251,7 +285,6 @@ const ProductDetailPage = () => {
                 </p>
               </div>
             </div>
-
             <div className="flex items-center space-x-2 pt-4 border-t">
               <span className="font-semibold text-lg text-text-primary">
                 Availability:
@@ -264,7 +297,6 @@ const ProductDetailPage = () => {
                 {product.countInStock > 0 ? `In Stock` : "Out of Stock"}
               </span>
             </div>
-
             {product.countInStock > 0 && (
               <div className="flex flex-col space-y-4 pt-2">
                 <div className="flex items-center space-x-4">
@@ -310,20 +342,27 @@ const ProductDetailPage = () => {
           Customer Reviews
         </h2>
         <div className="grid md:grid-cols-2 gap-12">
+                   {" "}
           <div>
+                       {" "}
             <h3 className="text-2xl font-semibold mb-4 text-text-primary">
-              Write your review
+                            Write your review            {" "}
             </h3>
+                       {" "}
             {userInfo ? (
               <form
                 onSubmit={submitReviewHandler}
                 className="space-y-4 bg-card-bg p-8 rounded-lg shadow-md"
               >
+                               {" "}
                 <div>
+                                   {" "}
                   <label className="font-semibold text-text-primary">
-                    Your Rating
+                                        Your Rating                  {" "}
                   </label>
+                                   {" "}
                   <div className="flex space-x-1 mt-2">
+                                       {" "}
                     {[...Array(5)].map((_, i) => (
                       <FaStar
                         key={i}
@@ -333,15 +372,20 @@ const ProductDetailPage = () => {
                         onClick={() => setRating(i + 1)}
                       />
                     ))}
+                                     {" "}
                   </div>
+                                 {" "}
                 </div>
+                               {" "}
                 <div>
+                                   {" "}
                   <label
                     htmlFor="comment"
                     className="font-semibold text-text-primary"
                   >
-                    Your Comment
+                                        Your Comment                  {" "}
                   </label>
+                                   {" "}
                   <textarea
                     id="comment"
                     rows="4"
@@ -350,49 +394,64 @@ const ProductDetailPage = () => {
                     required
                     className="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-brand-accent focus:outline-none transition text-text-primary bg-page-bg"
                   ></textarea>
+                                 {" "}
                 </div>
+                               {" "}
                 <button
                   type="submit"
                   disabled={loadingReview}
                   className="w-full bg-text-primary text-white py-3 rounded-md hover:bg-opacity-90 transition flex justify-center items-center font-semibold"
                 >
+                                   {" "}
                   {loadingReview ? (
                     <ClipLoader size={20} color="white" />
                   ) : (
                     "Submit Review"
                   )}
+                                 {" "}
                 </button>
+                             {" "}
               </form>
             ) : (
               <div className="p-6 bg-card-bg rounded-md">
+                               {" "}
                 <p className="text-text-secondary">
-                  Please{" "}
+                                    Please                  {" "}
                   <Link
                     to="/login"
                     className="text-brand-accent font-semibold hover:underline"
                   >
-                    sign in
+                                        sign in                  {" "}
                   </Link>{" "}
-                  to write a review.
+                                    to write a review.                {" "}
                 </p>
+                             {" "}
               </div>
             )}
+                     {" "}
           </div>
+                   {" "}
           <div className="space-y-6">
+                       {" "}
             {product.reviews.length === 0 && (
               <p className="text-text-secondary p-6 bg-card-bg rounded-md shadow-sm">
-                No reviews yet. Be the first to share your thoughts!
+                                No reviews yet. Be the first to share your
+                thoughts!              {" "}
               </p>
             )}
+                       {" "}
             {product.reviews.map((review) => (
               <div
                 key={review._id}
                 className="p-6 border rounded-md bg-card-bg shadow-sm"
               >
+                               {" "}
                 <p className="font-bold text-lg text-text-primary">
-                  {review.name}
+                                    {review.name}               {" "}
                 </p>
+                               {" "}
                 <div className="flex items-center my-1">
+                                   {" "}
                   {[...Array(5)].map((_, i) => (
                     <FaStar
                       key={i}
@@ -401,15 +460,24 @@ const ProductDetailPage = () => {
                       }
                     />
                   ))}
+                                 {" "}
                 </div>
+                               {" "}
                 <p className="text-gray-500 text-sm mb-2">
-                  {new Date(review.createdAt).toLocaleDateString()}
+                                   {" "}
+                  {new Date(review.createdAt).toLocaleDateString()}             
+                   {" "}
                 </p>
-                <p className="text-text-secondary">{review.comment}</p>
+                               {" "}
+                <p className="text-text-secondary">{review.comment}</p>         
+                   {" "}
               </div>
             ))}
+                     {" "}
           </div>
+                 {" "}
         </div>
+             {" "}
       </div>
 
       {relatedProducts.length > 0 && (

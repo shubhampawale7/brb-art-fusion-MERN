@@ -22,7 +22,6 @@ const ProductCard = ({ product, onQuickViewClick }) => {
     if (product.countInStock > 0) {
       cartDispatch({ type: "ADD_TO_CART", payload: { ...product, qty: 1 } });
       toast.success(`${product.name} added to cart!`);
-      // This new line opens the cart drawer automatically
       cartDispatch({ type: "OPEN_CART" });
     } else {
       toast.error("This product is currently out of stock.");
@@ -32,13 +31,13 @@ const ProductCard = ({ product, onQuickViewClick }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden m-2 group relative border border-transparent hover:shadow-xl transition-shadow duration-300">
       <Link to={`/product/${product._id}`}>
-        <div className="overflow-hidden relative">
+        <div className="h-64 overflow-hidden relative flex items-center justify-center bg-gray-100">
           <LazyLoadImage
             alt={product.name}
             src={product.images?.[0] || placeholderImage}
             effect="blur"
             placeholderSrc={placeholderImage}
-            className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
+            className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out"
           />
 
           <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -72,7 +71,7 @@ const ProductCard = ({ product, onQuickViewClick }) => {
         </div>
 
         <div className="p-4 text-center">
-          <h3 className="text-lg font-serif font-bold text-text-primary truncate">
+          <h3 className="text-lg font-serif font-bold text-text-primary truncate h-7">
             {product.name}
           </h3>
           <div className="flex justify-center items-center gap-4 mt-2">
