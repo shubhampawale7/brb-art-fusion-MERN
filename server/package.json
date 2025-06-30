@@ -24,6 +24,7 @@
     "mongoose": "^8.16.1",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.3",
+    "path": "^0.12.7",
     "razorpay": "^2.9.6",
     "sitemap": "^8.0.0",
     "slugify": "^1.6.6"
