@@ -5,13 +5,13 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 
 // Route Imports
-import userRoutes from "./routes/userRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-import contactRoutes from "./routes/contactRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js";
-import wishlistRoutes from "./routes/wishlistRoutes.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
-import articleRoutes from "./routes/articleRoutes.js";
+// import userRoutes from "./routes/userRoutes.js";
+// import productRoutes from "./routes/productRoutes.js";
+// import contactRoutes from "./routes/contactRoutes.js";
+// import orderRoutes from "./routes/orderRoutes.js";
+// import wishlistRoutes from "./routes/wishlistRoutes.js";
+// import uploadRoutes from "./routes/uploadRoutes.js";
+// import articleRoutes from "./routes/articleRoutes.js";
 
 // Middleware Imports
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
