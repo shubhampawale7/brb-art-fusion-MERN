@@ -7,7 +7,6 @@ import {
 } from "../controllers/wishlistController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
-// All wishlist routes are protected and require a logged-in user
 router.use(protect);
 
 router.route("/").get(getWishlist).post(addToWishlist);

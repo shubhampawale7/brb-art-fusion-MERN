@@ -2,34 +2,41 @@ import path from "path";
 import express from "express";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import asyncHandler from "express-async-handler";
 import "dotenv/config";
+import { protect, admin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Configure Cloudinary
+// Configure Cloudinary with credentials from your .env file
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure Multer for in-memory storage
+// Configure Multer to process the file in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Define the upload route
-router.post("/", upload.single("image"), async (req, res) => {
-  try {
+// It's protected by admin middleware to ensure only admins can upload
+router.post(
+  "/",
+  protect,
+  admin,
+  upload.single("image"),
+  asyncHandler(async (req, res) => {
     if (!req.file) {
       res.status(400);
       throw new Error("No file uploaded.");
     }
 
-    // Upload file to Cloudinary
-    // We use a stream to upload the file buffer
+    // Use a Promise to handle the stream-based upload to Cloudinary
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: "auto", folder: "brb-art-fusion" }, // You can specify a folder
+        // We use 'auto' to let Cloudinary detect if it's an image or video
+        { resource_type: "auto", folder: "brb-art-fusion" },
         (error, result) => {
           if (error) reject(error);
           resolve(result);
@@ -38,15 +45,13 @@ router.post("/", upload.single("image"), async (req, res) => {
       uploadStream.end(req.file.buffer);
     });
 
-    // Send back the secure URL
-    res.status(200).send({
-      message: "Image uploaded successfully",
+    // Send back the secure URL provided by Cloudinary
+    res.status(200).json({
+      message: "File uploaded successfully",
       url: result.secure_url,
+      public_id: result.public_id,
     });
-  } catch (error) {
-    res.status(400);
-    throw new Error(error.message);
-  }
-});
+  })
+);
 
 export default router;
