@@ -6,13 +6,17 @@ import API from "../services/api";
 import { toast } from "sonner";
 import { ClipLoader } from "react-spinners";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import Modal from "../components/common/Modal";
+import CancelOrderModal from "../components/orders/CancelOrderModal";
 
 const OrderDetailPage = () => {
   const { id: orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingPay, setLoadingPay] = useState(false);
-  const [loadingDeliver, setLoadingDeliver] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [loadingCancel, setLoadingCancel] = useState(false);
+
   const { state: auth } = useContext(AuthContext);
   const { userInfo } = auth;
 
@@ -44,7 +48,7 @@ const OrderDetailPage = () => {
       const { data: razorpayOrder } = await API.post(
         "/orders/create-razorpay-order",
         { amount: order.totalPrice },
-        { headers: { Authorization: `Bearer userInfo.token` } }
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
       );
 
       const options = {
@@ -64,7 +68,7 @@ const OrderDetailPage = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_signature: response.razorpay_signature,
               },
-              { headers: { Authorization: `Bearer userInfo.token` } }
+              { headers: { Authorization: `Bearer ${userInfo.token}` } }
             );
             toast.success("Payment successful!");
             fetchOrder();
@@ -75,7 +79,7 @@ const OrderDetailPage = () => {
           }
         },
         prefill: { name: order.user.name, email: order.user.email },
-        theme: { color: "#BFA181" },
+        theme: { color: "#991B1B" },
       };
 
       const rzp = new window.Razorpay(options);
@@ -90,22 +94,35 @@ const OrderDetailPage = () => {
     }
   };
 
-  const markAsDeliveredHandler = async () => {
-    setLoadingDeliver(true);
-    try {
-      await API.put(
-        `/orders/${orderId}/deliver`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
-        }
-      );
-      toast.success("Order marked as delivered!");
-      fetchOrder();
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update order.");
-    } finally {
-      setLoadingDeliver(false);
+  const cancelOrderHandler = async (reason) => {
+    if (!reason) {
+      toast.error("Please select a reason for cancellation.");
+      return;
+    }
+    if (
+      window.confirm(
+        "Are you sure you want to cancel this order? This action cannot be undone."
+      )
+    ) {
+      setLoadingCancel(true);
+      try {
+        await API.put(
+          `/orders/${orderId}/cancel`,
+          { reason },
+          {
+            headers: { Authorization: `Bearer ${userInfo.token}` },
+          }
+        );
+        toast.success("Order has been successfully cancelled.");
+        setIsCancelModalOpen(false);
+        fetchOrder();
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || "Failed to cancel order."
+        );
+      } finally {
+        setLoadingCancel(false);
+      }
     }
   };
 
@@ -118,7 +135,11 @@ const OrderDetailPage = () => {
   }
 
   if (!order) {
-    return <div className="text-center py-10">Order not found.</div>;
+    return (
+      <div className="text-center py-10 font-serif text-2xl text-text-primary">
+        Order Not Found.
+      </div>
+    );
   }
 
   return (
@@ -127,56 +148,82 @@ const OrderDetailPage = () => {
         <title>Order {order._id} - BRB Art Fusion</title>
       </Helmet>
       <div className="container mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold mb-4">Order Details</h1>
-        <p className="text-lg text-gray-600 mb-8">Order ID: {order._id}</p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-3xl font-bold font-serif mb-2 text-text-primary">
+              Order Details
+            </h1>
+            <p className="text-lg text-text-secondary font-mono">
+              ID: {order._id}
+            </p>
+          </div>
+          {order.isCancelled && (
+            <div className="p-2 px-4 bg-red-600 text-white rounded-md font-bold text-sm">
+              CANCELLED
+            </div>
+          )}
+        </div>
+
+        {order.isCancelled && (
+          <div className="p-4 mb-6 bg-red-100 text-red-800 rounded-lg shadow-sm">
+            <p>
+              This order was cancelled on{" "}
+              {new Date(order.cancelledAt).toLocaleDateString()}. Reason:{" "}
+              <strong>{order.cancellationReason}</strong>
+            </p>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            {/* Shipping Info */}
-            <div className="p-6 bg-white shadow-md rounded-md mb-6">
-              <h2 className="text-2xl font-semibold mb-4">
+          <div className="md:col-span-2 space-y-6">
+            <div className="p-6 bg-white shadow-md rounded-lg">
+              <h2 className="text-2xl font-semibold mb-4 text-text-primary">
                 Shipping Information
               </h2>
-              <p>
-                <strong>Name:</strong> {order.user.name}
-              </p>
-              <p>
-                <strong>Email:</strong>{" "}
-                <a
-                  href={`mailto:${order.user.email}`}
-                  className="text-blue-600"
-                >
-                  {order.user.email}
-                </a>
-              </p>
-              <p>
-                <strong>Address:</strong> {order.shippingAddress.address},{" "}
-                {order.shippingAddress.city}, {order.shippingAddress.postalCode}
-                , {order.shippingAddress.country}
-              </p>
+              <div className="space-y-1 text-text-secondary">
+                <p>
+                  <strong>Name:</strong> {order.user.name}
+                </p>
+                <p>
+                  <strong>Email:</strong>{" "}
+                  <a
+                    href={`mailto:${order.user.email}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {order.user.email}
+                  </a>
+                </p>
+                <p>
+                  <strong>Address:</strong> {order.shippingAddress.address},{" "}
+                  {order.shippingAddress.city},{" "}
+                  {order.shippingAddress.postalCode},{" "}
+                  {order.shippingAddress.country}
+                </p>
+              </div>
               <div
                 className={`mt-4 p-2 rounded-md text-center font-semibold ${
                   order.isDelivered
                     ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
+                    : "bg-orange-100 text-orange-800"
                 }`}
               >
                 {order.isDelivered
                   ? `Delivered on ${new Date(
                       order.deliveredAt
                     ).toLocaleDateString()}`
-                  : "Not Delivered"}
+                  : "In Transit"}
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="p-6 bg-white shadow-md rounded-md mb-6">
-              <h2 className="text-2xl font-semibold mb-4">
+            <div className="p-6 bg-white shadow-md rounded-lg">
+              <h2 className="text-2xl font-semibold mb-4 text-text-primary">
                 Payment Information
               </h2>
-              <p>
-                <strong>Method:</strong> {order.paymentMethod}
-              </p>
+              <div className="space-y-1 text-text-secondary">
+                <p>
+                  <strong>Method:</strong> {order.paymentMethod}
+                </p>
+              </div>
               <div
                 className={`mt-4 p-2 rounded-md text-center font-semibold ${
                   order.isPaid
@@ -190,14 +237,15 @@ const OrderDetailPage = () => {
               </div>
             </div>
 
-            {/* Order Items */}
-            <div className="p-6 bg-white shadow-md rounded-md">
-              <h2 className="text-2xl font-semibold mb-4">Order Items</h2>
+            <div className="p-6 bg-white shadow-md rounded-lg">
+              <h2 className="text-2xl font-semibold mb-4 text-text-primary">
+                Order Items
+              </h2>
               <div className="space-y-4">
                 {order.orderItems.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between flex-wrap"
+                    className="flex items-center justify-between flex-wrap border-b last:border-b-0 pb-2"
                   >
                     <div className="flex items-center mb-2 sm:mb-0">
                       <img
@@ -207,12 +255,12 @@ const OrderDetailPage = () => {
                       />
                       <Link
                         to={`/product/${item.product}`}
-                        className="font-semibold hover:underline"
+                        className="font-semibold hover:text-brand-accent"
                       >
                         {item.name}
                       </Link>
                     </div>
-                    <div>
+                    <div className="font-mono text-text-secondary">
                       {item.qty} x ₹{item.price.toFixed(2)} ={" "}
                       <strong>₹{(item.qty * item.price).toFixed(2)}</strong>
                     </div>
@@ -222,9 +270,8 @@ const OrderDetailPage = () => {
             </div>
           </div>
 
-          {/* Order Summary */}
           <div className="md:col-span-1">
-            <div className="p-6 bg-white shadow-md rounded-md sticky top-24">
+            <div className="p-6 bg-white shadow-md rounded-lg sticky top-24">
               <h2 className="text-2xl font-semibold mb-4 text-center border-b pb-4">
                 Order Summary
               </h2>
@@ -247,39 +294,31 @@ const OrderDetailPage = () => {
                 </div>
               </div>
 
-              {!order.isPaid && (
+              {!order.isPaid && !order.isCancelled && !userInfo.isAdmin && (
                 <div className="mt-6">
                   <button
                     onClick={payWithRazorpayHandler}
                     disabled={loadingPay}
-                    className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 flex justify-center items-center"
+                    className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 flex justify-center items-center font-semibold"
                   >
                     {loadingPay ? (
                       <ClipLoader size={20} color="white" />
                     ) : (
-                      "Proceed to Pay with Razorpay"
+                      "Proceed to Pay"
                     )}
                   </button>
                 </div>
               )}
 
-              {/* Admin "Mark as Delivered" Button */}
-              {userInfo &&
-                userInfo.isAdmin &&
-                order.isPaid &&
-                !order.isDelivered && (
-                  <div className="mt-4">
+              {!order.isDelivered &&
+                !order.isCancelled &&
+                !userInfo.isAdmin && (
+                  <div className="mt-4 border-t pt-4">
                     <button
-                      type="button"
-                      className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition flex justify-center items-center"
-                      onClick={markAsDeliveredHandler}
-                      disabled={loadingDeliver}
+                      onClick={() => setIsCancelModalOpen(true)}
+                      className="w-full bg-brand-accent text-white py-2 rounded-md hover:bg-opacity-90 font-semibold"
                     >
-                      {loadingDeliver ? (
-                        <ClipLoader size={20} color="white" />
-                      ) : (
-                        "Mark As Delivered"
-                      )}
+                      Cancel Order
                     </button>
                   </div>
                 )}
@@ -287,6 +326,17 @@ const OrderDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+      >
+        <CancelOrderModal
+          onConfirm={cancelOrderHandler}
+          onCancel={() => setIsCancelModalOpen(false)}
+          loading={loadingCancel}
+        />
+      </Modal>
     </>
   );
 };

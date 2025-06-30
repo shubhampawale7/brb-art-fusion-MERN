@@ -1,4 +1,3 @@
-// server/models/orderModel.js
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
@@ -32,11 +31,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     paymentResult: {
-      // These details will come from Razorpay
       id: { type: String },
       status: { type: String },
       update_time: { type: String },
       email_address: { type: String },
+      signature: { type: String },
     },
     shippingPrice: {
       type: Number,
@@ -63,6 +62,18 @@ const orderSchema = new mongoose.Schema(
     },
     deliveredAt: {
       type: Date,
+    },
+    // --- New Fields for Cancellation ---
+    isCancelled: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    cancelledAt: {
+      type: Date,
+    },
+    cancellationReason: {
+      type: String,
     },
   },
   {

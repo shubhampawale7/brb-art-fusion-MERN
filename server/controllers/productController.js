@@ -1,9 +1,11 @@
+import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
+
+// All functions are now wrapped in asyncHandler for clean error handling.
 
 // @desc    Fetch all products with search, filter, and pagination
 // @route   GET /api/products
-// @access  Public
-const getProducts = async (req, res) => {
+const getProducts = asyncHandler(async (req, res) => {
   const pageSize = 8;
   const page = Number(req.query.pageNumber) || 1;
 
@@ -17,42 +19,35 @@ const getProducts = async (req, res) => {
   const maxPrice = req.query.maxPrice
     ? Number(req.query.maxPrice)
     : Number.MAX_SAFE_INTEGER;
-
   const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
 
   let sortOrder = {};
   if (req.query.sort === "latest") {
-    sortOrder = { createdAt: -1 }; // Newest first
+    sortOrder = { createdAt: -1 };
   } else if (req.query.sort === "toprated") {
-    sortOrder = { rating: -1 }; // Highest rating first
+    sortOrder = { rating: -1 };
   }
 
-  try {
-    const count = await Product.countDocuments({
-      ...keyword,
-      ...category,
-      ...priceFilter,
-    });
-    const products = await Product.find({
-      ...keyword,
-      ...category,
-      ...priceFilter,
-    })
-      .sort(sortOrder)
-      .limit(pageSize)
-      .skip(pageSize * (page - 1));
+  const count = await Product.countDocuments({
+    ...keyword,
+    ...category,
+    ...priceFilter,
+  });
+  const products = await Product.find({
+    ...keyword,
+    ...category,
+    ...priceFilter,
+  })
+    .sort(sortOrder)
+    .limit(pageSize)
+    .skip(pageSize * (page - 1));
 
-    res.json({ products, page, pages: Math.ceil(count / pageSize) });
-  } catch (error) {
-    res.status(500);
-    throw new Error("Error fetching products");
-  }
-};
+  res.json({ products, page, pages: Math.ceil(count / pageSize) });
+});
 
 // @desc    Get a single product by ID
 // @route   GET /api/products/:id
-// @access  Public
-const getProductById = async (req, res) => {
+const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     res.json(product);
@@ -60,25 +55,24 @@ const getProductById = async (req, res) => {
     res.status(404);
     throw new Error("Product not found");
   }
-};
+});
 
 // @desc    Get all unique product categories
 // @route   GET /api/products/categories
-// @access  Public
-const getProductCategories = async (req, res) => {
+const getProductCategories = asyncHandler(async (req, res) => {
   const categories = await Product.find().distinct("category");
   res.json(categories);
-};
+});
 
 // @desc    Create a product
 // @route   POST /api/products
-// @access  Private/Admin
-const createProduct = async (req, res) => {
+const createProduct = asyncHandler(async (req, res) => {
   const product = new Product({
     name: "Sample Name",
     price: 0,
     user: req.user._id,
     images: ["/images/sample.jpg"],
+    videos: [],
     category: "Sample Category",
     countInStock: 0,
     numReviews: 0,
@@ -87,69 +81,49 @@ const createProduct = async (req, res) => {
     weight: "N/A",
     material: "100% Brass",
   });
-
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
-};
+});
 
 // @desc    Update a product
 // @route   PUT /api/products/:id
-// @access  Private/Admin
-const updateProduct = async (req, res) => {
-  try {
-    const {
-      name,
-      price,
-      description,
-      images,
-      videos,
-      category,
-      countInStock,
-      dimensions,
-      weight,
-      material,
-    } = req.body;
+const updateProduct = asyncHandler(async (req, res) => {
+  const {
+    name,
+    price,
+    description,
+    images,
+    videos,
+    category,
+    countInStock,
+    dimensions,
+    weight,
+    material,
+  } = req.body;
+  const product = await Product.findById(req.params.id);
 
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-      // Add specific validation checks before attempting to save
-      if (!name || !category || !description) {
-        res.status(400);
-        throw new Error("Name, category, and description are required fields.");
-      }
-      if (!images || images.length === 0) {
-        res.status(400);
-        throw new Error("At least one product image is required.");
-      }
-
-      product.name = name;
-      product.price = Number(price);
-      product.description = description;
-      product.images = images;
-      product.videos = videos || [];
-      product.category = category;
-      product.countInStock = Number(countInStock);
-      product.dimensions = dimensions;
-      product.weight = weight;
-      product.material = material;
-
-      const updatedProduct = await product.save();
-      res.json(updatedProduct);
-    } else {
-      res.status(404);
-      throw new Error("Product not found");
-    }
-  } catch (error) {
-    res.status(400);
-    throw new Error(error.message);
+  if (product) {
+    product.name = name;
+    product.price = Number(price);
+    product.description = description;
+    product.images = images;
+    product.videos = videos || [];
+    product.category = category;
+    product.countInStock = Number(countInStock);
+    product.dimensions = dimensions;
+    product.weight = weight;
+    product.material = material;
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } else {
+    res.status(404);
+    throw new Error("Product not found");
   }
-};
+});
 
 // @desc    Delete a product
 // @route   DELETE /api/products/:id
-// @access  Private/Admin
-const deleteProduct = async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     await product.deleteOne();
@@ -158,12 +132,11 @@ const deleteProduct = async (req, res) => {
     res.status(404);
     throw new Error("Product not found");
   }
-};
+});
 
 // @desc    Create a new review
 // @route   POST /api/products/:id/reviews
-// @access  Private
-const createProductReview = async (req, res) => {
+const createProductReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
   const product = await Product.findById(req.params.id);
 
@@ -192,7 +165,7 @@ const createProductReview = async (req, res) => {
     res.status(404);
     throw new Error("Product not found");
   }
-};
+});
 
 export {
   getProducts,

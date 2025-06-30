@@ -1,6 +1,7 @@
 import express from "express";
 const router = express.Router();
-import { submitContactForm } from "../controllers/userController.js"; // Adjust path if you made a new controller
+// Change this import from userController.js to contactController.js
+import { submitContactForm } from "../controllers/contactController.js";
 
 router.route("/").post(submitContactForm);
 

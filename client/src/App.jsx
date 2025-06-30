@@ -32,6 +32,8 @@ import PlaceOrderPage from "./pages/PlaceOrderPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import FavoritesPage from "./pages/FavoritesPage";
+import BlogPage from "./pages/BlogPage";
+import ArticleDetailPage from "./pages/ArticleDetailPage";
 
 // Admin Page Components
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -40,6 +42,7 @@ import ProductEditPage from "./pages/admin/ProductEditPage";
 import OrderListPage from "./pages/admin/OrderListPage";
 import UserListPage from "./pages/admin/UserListPage";
 import PaymentPage from "./pages/PaymentPage";
+import OrderDetailPageAdmin from "./pages/admin/OrderDetailPageAdmin";
 
 function App() {
   return (
@@ -71,7 +74,6 @@ function App() {
                       path="/resetpassword/:resettoken"
                       element={<ResetPasswordPage />}
                     />
-
                     {/* --- Shop, Search, and Pagination Routes --- */}
                     <Route path="/shop" element={<ShopPage />} />
                     <Route
@@ -94,7 +96,9 @@ function App() {
                       path="/shop/category/:category/page/:pageNumber"
                       element={<ShopPage />}
                     />
-
+                    <Route path="/blog" element={<BlogPage />} />{" "}
+                    {/* <-- Main blog page */}
+                    <Route path="/blog/:slug" element={<ArticleDetailPage />} />
                     {/* --- Protected User Routes --- */}
                     <Route path="" element={<PrivateRoute />}>
                       <Route path="/shipping" element={<ShippingPage />} />
@@ -104,7 +108,6 @@ function App() {
                       <Route path="/order/:id" element={<OrderDetailPage />} />
                       <Route path="/favorites" element={<FavoritesPage />} />
                     </Route>
-
                     {/* --- Protected Admin Routes --- */}
                     <Route path="/admin" element={<AdminRoute />}>
                       <Route element={<AdminLayout />}>
@@ -121,6 +124,10 @@ function App() {
                         <Route
                           path="product/:id/edit"
                           element={<ProductEditPage />}
+                        />
+                        <Route
+                          path="order/:id"
+                          element={<OrderDetailPageAdmin />}
                         />
                       </Route>
                     </Route>

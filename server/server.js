@@ -10,6 +10,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js"; // <-- 1. Import the new routes
 import uploadRoutes from "./routes/uploadRoutes.js";
+import articleRoutes from "./routes/articleRoutes.js";
 
 // Middleware Imports
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
@@ -33,7 +34,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/upload", uploadRoutes); // <-- 2. This is the essential line to add
+app.use("/api/upload", uploadRoutes);
+app.use("/api/articles", articleRoutes); // <-- 2. This is the essential line to add
 
 // Use the custom error handling middleware
 app.use(notFound);

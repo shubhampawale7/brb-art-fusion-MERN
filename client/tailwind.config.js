@@ -12,7 +12,7 @@ export default {
         "brand-accent": "#991B1B", // Crimson Red
         "page-bg": "#F8F7F4", // Off-White / Light Beige
         "card-bg": "#FFFFFF", // Pure White for cards
-        "text-primary": "#334155", // Dark Slate Blue
+        "text-primary": "#991B1B", // Dark Slate Blue
         "text-secondary": "#64748B", // Lighter Slate Gray
         "brand-gold": "#BFA181", // Muted Gold for highlights
       },

@@ -8,6 +8,7 @@ import {
   FaRupeeSign,
   FaCheckCircle,
   FaTimesCircle,
+  FaChartBar,
 } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
@@ -77,24 +78,19 @@ const AdminDashboardPage = () => {
 
         setSummary(summaryRes.data);
         setSalesData(salesRes.data);
-        setRecentOrders(recentOrdersRes.data);
+        setRecentOrders(recentOrdersRes.data.orders);
       } catch (error) {
         toast.error("Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
     };
-    if (userInfo) {
-      fetchDashboardData();
-    }
+    if (userInfo) fetchDashboardData();
   }, [userInfo]);
 
   const chartOptions = {
     responsive: true,
-    plugins: {
-      legend: { display: false },
-      title: { display: false },
-    },
+    plugins: { legend: { display: false }, title: { display: false } },
     scales: {
       y: { beginAtZero: true, ticks: { callback: (value) => `₹${value}` } },
       x: { grid: { display: false } },
@@ -113,7 +109,7 @@ const AdminDashboardPage = () => {
       {
         label: "Sales",
         data: salesData?.map((d) => d.totalSales) || [],
-        backgroundColor: "#991B1B", // Crimson 'brand-accent'
+        backgroundColor: "#991B1B",
         borderRadius: 4,
         barThickness: 20,
       },
@@ -133,7 +129,6 @@ const AdminDashboardPage = () => {
           </p>
         </div>
 
-        {/* Top Row: Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={<FaRupeeSign className="text-4xl text-brand-accent" />}
@@ -161,7 +156,6 @@ const AdminDashboardPage = () => {
           />
         </div>
 
-        {/* Main Content: Chart and Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-4">Sales Analytics</h2>
@@ -198,70 +192,94 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* Bottom Section: Recent Orders Table */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-bold mb-4">Recent Orders</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="border-b-2 border-gray-200">
-                <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-text-secondary uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-text-secondary uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-text-secondary uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-4 py-2 text-center text-sm font-semibold text-text-secondary uppercase tracking-wider">
-                    Paid
-                  </th>
-                  <th className="px-4 py-2 text-right text-sm font-semibold text-text-secondary uppercase tracking-wider">
-                    Details
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="5" className="text-center py-10">
-                      <ClipLoader color="#BFA181" />
-                    </td>
-                  </tr>
-                ) : (
-                  recentOrders.map((order) => (
-                    <tr key={order._id} className="border-t hover:bg-page-bg">
-                      <td className="px-4 py-3 text-sm text-gray-500 font-mono">
-                        {order._id.substring(0, 12)}...
-                      </td>
-                      <td className="px-4 py-3 font-medium">
-                        {order.user?.name || "N/A"}
-                      </td>
-                      <td className="px-4 py-3">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <ClipLoader color="#BFA181" />
+            </div>
+          ) : (
+            <div>
+              {/* --- MOBILE VIEW: Recent Orders as Cards --- */}
+              <div className="space-y-4 md:hidden">
+                {recentOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="border rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-mono text-xs text-text-secondary">
+                          {order._id}
+                        </p>
+                        <p className="font-semibold text-text-primary">
+                          {order.user?.name || "N/A"}
+                        </p>
+                      </div>
+                      <p className="font-bold text-lg">
                         ₹{order.totalPrice.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {order.isPaid ? (
-                          <FaCheckCircle className="text-green-500 mx-auto" />
-                        ) : (
-                          <FaTimesCircle className="text-red-500 mx-auto" />
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          to={`/order/${order._id}`}
-                          className="text-brand-accent font-semibold hover:underline"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                      </p>
+                    </div>
+                    <div className="border-t pt-3 flex justify-between items-center text-sm">
+                      <span
+                        className={`font-semibold px-2 py-1 rounded-full ${
+                          order.isPaid
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {order.isPaid ? "Paid" : "Not Paid"}
+                      </span>
+                      <Link
+                        to={`/admin/order/${order._id}`}
+                        className="text-brand-accent font-semibold hover:underline"
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* --- DESKTOP VIEW: Recent Orders as Table --- */}
+              <div className="overflow-x-auto hidden md:block">
+                <table className="min-w-full">
+                  <thead className="border-b-2 border-gray-200">
+                    <tr /* ... Table Headers ... */></tr>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => (
+                      <tr key={order._id} className="border-t hover:bg-page-bg">
+                        <td className="px-4 py-3 text-sm text-gray-500 font-mono">
+                          {order._id.substring(0, 12)}...
+                        </td>
+                        <td className="px-4 py-3 font-medium">
+                          {order.user?.name || "N/A"}
+                        </td>
+                        <td className="px-4 py-3">
+                          ₹{order.totalPrice.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {order.isPaid ? (
+                            <FaCheckCircle className="text-green-500 mx-auto" />
+                          ) : (
+                            <FaTimesCircle className="text-red-500 mx-auto" />
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            to={`/admin/order/${order._id}`}
+                            className="text-brand-accent font-semibold hover:underline"
+                          >
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
