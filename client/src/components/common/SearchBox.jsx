@@ -1,37 +1,25 @@
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 
-const SearchBox = () => {
-  const navigate = useNavigate();
-  const { keyword: urlKeyword } = useParams();
-  const [keyword, setKeyword] = useState(urlKeyword || "");
-
-  const submitHandler = (e) => {
+const SearchBox = ({ value, onChange }) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (keyword.trim()) {
-      navigate(`/search/${keyword}`);
-    } else {
-      navigate("/");
-    }
+    // The live search happens automatically, but this prevents page reload
+    // if the user hits Enter.
   };
 
   return (
-    <form onSubmit={submitHandler} className="flex items-center">
+    <form onSubmit={handleSubmit} className="flex w-full relative items-center">
       <input
         type="text"
         name="q"
-        onChange={(e) => setKeyword(e.target.value)}
-        value={keyword}
-        placeholder="Search Products..."
-        className="p-2 border rounded-l-md w-64 focus:outline-none"
+        value={value}
+        onChange={onChange}
+        placeholder="Search products..."
+        className="w-full p-2 pl-10 border rounded-md focus:ring-brand-accent focus:ring-2 focus:outline-none"
+        aria-label="Search products"
       />
-      <button
-        type="submit"
-        className="p-3 bg-[#BFA181] text-white rounded-r-md"
-      >
-        <FaSearch />
-      </button>
+      {/* Search Icon inside the input field for better UI */}
+      <FaSearch className="absolute left-3 text-gray-400 pointer-events-none" />
     </form>
   );
 };
