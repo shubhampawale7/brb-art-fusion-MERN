@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
   );
 } else {
-  app.get("/", (req, res) => {
+  app.get("/*splat", (req, res) => {
     res.send("API is running...");
   });
 }
