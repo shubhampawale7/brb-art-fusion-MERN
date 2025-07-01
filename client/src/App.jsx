@@ -69,6 +69,7 @@ function App() {
               <Route path="/product/:id" element={<ProductDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/our-story" element={<OurStoryPage />} />
               <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
               <Route
                 path="/resetpassword/:resettoken"
@@ -94,7 +95,7 @@ function App() {
                 <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/placeorder" element={<PlaceOrderPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/our-story" element={<OurStoryPage />} />
+
                 <Route path="/order/:id" element={<OrderDetailPage />} />
                 <Route path="/favorites" element={<FavoritesPage />} />
               </Route>
