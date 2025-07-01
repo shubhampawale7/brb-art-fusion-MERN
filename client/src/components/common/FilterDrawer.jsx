@@ -20,10 +20,21 @@ const FilterDrawer = ({
   setMaxPrice,
   handlePriceFilter,
   clearFilters,
+  sortBy,
+  onSortChange,
 }) => {
   const activeCategoryClass = "text-brand-accent font-bold";
   const categoryLinkClass =
     "hover:text-brand-accent transition-colors duration-200";
+
+  // *** KEY CHANGE HERE ***
+  // The 'value' for each option has been updated to match your backend controller.
+  const sortOptions = [
+    { value: "latest", label: "Newest Arrivals" }, // Was 'newest'
+    { value: "price_asc", label: "Price: Low to High" }, // Was 'price-asc'
+    { value: "price_desc", label: "Price: High to Low" }, // Was 'price-desc'
+    { value: "toprated", label: "Avg. Customer Review" }, // Was 'rating'
+  ];
 
   return (
     <>
@@ -44,7 +55,7 @@ const FilterDrawer = ({
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-2xl font-bold font-serif">Filters</h2>
+            <h2 className="text-2xl font-bold font-serif">Filters & Sort</h2>
             <button
               onClick={onClose}
               className="text-2xl text-gray-500 hover:text-black"
@@ -55,6 +66,27 @@ const FilterDrawer = ({
 
           {/* Filters Body */}
           <div className="p-6 flex-grow overflow-y-auto">
+            <FilterSection title="Sort By">
+              <div className="flex flex-col items-start gap-3">
+                {sortOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => onSortChange(option.value)}
+                    className={`text-left transition-colors duration-200 ${
+                      // Defaulting to 'latest' if the sort value is something else (like 'newest' from old URLs)
+                      sortBy === option.value ||
+                      (option.value === "latest" &&
+                        !sortOptions.some((o) => o.value === sortBy))
+                        ? "text-brand-accent font-bold"
+                        : "hover:text-brand-accent"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </FilterSection>
+
             <FilterSection title="Price Range">
               <form onSubmit={handlePriceFilter} className="space-y-4">
                 <div className="flex items-center gap-2">

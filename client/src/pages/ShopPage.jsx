@@ -18,6 +18,7 @@ const ShopPage = () => {
   const { category } = useParams();
 
   const pageNumber = searchParams.get("page") || 1;
+  const sortBy = searchParams.get("sort") || "newest";
   const urlMinPrice = searchParams.get("minPrice") || "";
   const urlMaxPrice = searchParams.get("maxPrice") || "";
   const urlKeyword = searchParams.get("keyword") || "";
@@ -35,7 +36,6 @@ const ShopPage = () => {
   const [searchTerm, setSearchTerm] = useState(urlKeyword);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
-  // Debouncing effect for search
   useEffect(() => {
     const timer = setTimeout(() => {
       const currentParams = new URLSearchParams(searchParams);
@@ -47,11 +47,9 @@ const ShopPage = () => {
       currentParams.delete("page");
       setSearchParams(currentParams, { replace: true });
     }, 500);
-
     return () => clearTimeout(timer);
   }, [searchTerm, setSearchParams]);
 
-  // Main data fetching effect
   useEffect(() => {
     const fetchAllShopData = async () => {
       setLoading(true);
@@ -62,6 +60,7 @@ const ShopPage = () => {
           category,
           minPrice: searchParams.get("minPrice"),
           maxPrice: searchParams.get("maxPrice"),
+          sort: sortBy,
         };
         const [mainRes, categoriesRes] = await Promise.all([
           API.get(`/products`, { params }),
@@ -80,6 +79,10 @@ const ShopPage = () => {
       }
     };
     fetchAllShopData();
+    // *** BUG FIX HERE ***
+    // The dependency array should not include 'sortBy' because it is derived
+    // from 'searchParams'. Including only 'searchParams' ensures the effect
+    // runs correctly whenever the URL query changes.
   }, [category, pageNumber, searchParams]);
 
   const handlePageClick = (event) => {
@@ -103,10 +106,21 @@ const ShopPage = () => {
     setIsFilterDrawerOpen(false);
   };
 
+  const handleSortChange = (newSortValue) => {
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.set("sort", newSortValue);
+    currentParams.delete("page");
+    setSearchParams(currentParams);
+    setIsFilterDrawerOpen(false);
+  };
+
   const clearFilters = () => {
     setSearchTerm("");
     setMinPrice("");
     setMaxPrice("");
+    const currentParams = new URLSearchParams();
+    currentParams.set("sort", "newest");
+    setSearchParams(currentParams);
     navigate("/shop");
   };
 
@@ -127,6 +141,8 @@ const ShopPage = () => {
         setMaxPrice={setMaxPrice}
         handlePriceFilter={handlePriceFilter}
         clearFilters={clearFilters}
+        sortBy={sortBy}
+        onSortChange={handleSortChange}
       />
 
       <div className="container mx-auto px-4 py-8 sm:px-6 sm:py-12">
@@ -153,7 +169,7 @@ const ShopPage = () => {
             className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2 border-2 border-gray-300 rounded-md font-semibold hover:bg-gray-200 hover:border-gray-400 transition-colors"
           >
             <FaFilter />
-            <span>Filters</span>
+            <span>Filters & Sort</span>
           </button>
         </div>
 
@@ -164,7 +180,6 @@ const ShopPage = () => {
             </div>
           ) : (
             <>
-              {/* THIS IS THE KEY LINE FOR RESPONSIVENESS */}
               <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {mainProductsData.products.length > 0 ? (
                   mainProductsData.products.map((product) => (
