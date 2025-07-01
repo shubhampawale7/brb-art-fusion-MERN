@@ -1,13 +1,14 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+// --- CHANGE: Importing a more elegant and modern icon set ---
 import {
-  FaShoppingCart,
-  FaHeart,
-  FaUser,
-  FaBars,
-  FaTimes,
-  FaChevronDown,
-} from "react-icons/fa";
+  FiShoppingCart,
+  FiHeart,
+  FiUser,
+  FiMenu,
+  FiX,
+  FiChevronDown,
+} from "react-icons/fi";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,7 +29,6 @@ const Navbar = () => {
   const [navCategories, setNavCategories] = useState([]);
   const [featuredItems, setFeaturedItems] = useState([]);
 
-  // --- START: Logic for the new Announcement Ticker ---
   const announcements = [
     "✨ Free Shipping on All Orders Above ₹2000 ✨",
     "🎉 New Arrivals are Here! Shop Now! 🎉",
@@ -40,10 +40,9 @@ const Navbar = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
-    }, 4000); // Change announcement every 4 seconds
+    }, 4000);
     return () => clearInterval(timer);
   }, [announcements.length]);
-  // --- END: Logic for the new Announcement Ticker ---
 
   const { state: cartState, dispatch: cartDispatch } = useContext(CartContext);
   const { cartItems } = cartState;
@@ -95,7 +94,7 @@ const Navbar = () => {
     }`;
 
   const mobileNavLinkClass = ({ isActive }) =>
-    `block px-3 py-2 rounded text-lg ${
+    `block px-3 py-2 rounded text-base ${
       isActive
         ? "bg-brand-accent text-white"
         : "text-text-primary hover:bg-page-bg"
@@ -106,8 +105,7 @@ const Navbar = () => {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      {/* --- START: Redesigned Announcement Bar --- */}
-      <div className="bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 text-white font-bold text-sm text-center">
+      <div className="bg-gray-800 text-white font-bold text-sm text-center">
         <div className="container mx-auto px-6 h-10 flex items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
@@ -122,16 +120,15 @@ const Navbar = () => {
           </AnimatePresence>
         </div>
       </div>
-      {/* --- END: Redesigned Announcement Bar --- */}
 
       {/* Main Navigation */}
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        {/* ... Rest of your Navbar code remains the same ... */}
         <Link to="/">
           <Logo />
         </Link>
 
-        <div className="hidden md:flex items-center space-x-8 text-lg font-semibold">
+        {/* --- CHANGE: Font weight changed from font-semibold to font-medium --- */}
+        <div className="hidden md:flex items-center space-x-8 text-base font-medium">
           <NavLink to="/" className={desktopNavLinkClass}>
             Home
           </NavLink>
@@ -142,11 +139,12 @@ const Navbar = () => {
           >
             <NavLink to="/shop" className={desktopNavLinkClass}>
               Shop
-              <FaChevronDown
+              {/* --- CHANGE: Using new FiChevronDown icon --- */}
+              <FiChevronDown
                 className={`transition-transform duration-200 ${
                   megaMenuOpen ? "rotate-180" : ""
                 }`}
-                size={12}
+                size={16}
               />
             </NavLink>
             <AnimatePresence>
@@ -213,13 +211,14 @@ const Navbar = () => {
           </NavLink>
         </div>
 
-        <div className="flex items-center space-x-4 text-text-primary">
+        <div className="flex items-center space-x-5 text-text-primary">
           <Link
             to="/favorites"
             aria-label="Favorites"
-            className="relative hover:text-brand-accent"
+            className="relative hover:text-brand-accent transition-colors"
           >
-            <FaHeart className="text-2xl" />
+            {/* --- CHANGE: Using new FiHeart icon --- */}
+            <FiHeart className="text-2xl" />
             {wishlistItems && wishlistItems.length > 0 && (
               <span className="absolute -top-2 -right-3 bg-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {wishlistItems.length}
@@ -229,9 +228,10 @@ const Navbar = () => {
           <button
             onClick={() => cartDispatch({ type: "OPEN_CART" })}
             aria-label="Shopping Cart"
-            className="relative hover:text-brand-accent"
+            className="relative hover:text-brand-accent transition-colors"
           >
-            <FaShoppingCart className="text-2xl" />
+            {/* --- CHANGE: Using new FiShoppingCart icon --- */}
+            <FiShoppingCart className="text-2xl" />
             {cartItems.length > 0 && (
               <span className="absolute -top-2 -right-3 bg-brand-accent text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {cartItems.reduce((acc, item) => acc + item.qty, 0)}
@@ -242,17 +242,18 @@ const Navbar = () => {
             {userInfo ? (
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center space-x-2 focus:outline-none hover:text-brand-accent"
+                className="flex items-center space-x-2 focus:outline-none hover:text-brand-accent transition-colors"
               >
-                <FaUser className="text-2xl" />
+                {/* --- CHANGE: Using new FiUser icon --- */}
+                <FiUser className="text-2xl" />
               </button>
             ) : (
               <Link
                 to="/login"
                 aria-label="Login"
-                className="hover:text-brand-accent"
+                className="hover:text-brand-accent transition-colors"
               >
-                <FaUser className="text-2xl" />
+                <FiUser className="text-2xl" />
               </Link>
             )}
             <AnimatePresence>
@@ -297,7 +298,8 @@ const Navbar = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-2xl"
             >
-              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+              {/* --- CHANGE: Using new FiMenu/FiX icons --- */}
+              {mobileMenuOpen ? <FiX /> : <FiMenu />}
             </button>
           </div>
         </div>
@@ -362,7 +364,7 @@ const Navbar = () => {
                       logoutHandler();
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full text-left block px-3 py-2 text-lg text-text-primary hover:bg-page-bg rounded"
+                    className="w-full text-left block px-3 py-2 text-base text-text-primary hover:bg-page-bg rounded"
                   >
                     Logout
                   </button>
