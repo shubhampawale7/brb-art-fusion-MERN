@@ -19,13 +19,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/*users", userRoutes);
-app.use("/api/*products", productRoutes);
-app.use("/api/*orders", orderRoutes);
-app.use("/api/*upload", uploadRoutes);
-app.use("/api/*wishlist", wishlistRoutes);
-app.use("/api/*articles", articleRoutes);
-app.use("/api/*contact", contactRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/articles", articleRoutes);
+app.use("/api/contact", contactRoutes);
 
 if (process.env.NODE_ENV === "production") {
   const __dirname = path.resolve();
