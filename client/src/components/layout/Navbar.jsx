@@ -6,8 +6,6 @@ import {
   FaUser,
   FaBars,
   FaTimes,
-  FaPhone,
-  FaEnvelope,
   FaChevronDown,
 } from "react-icons/fa";
 import { toast } from "sonner";
@@ -30,8 +28,25 @@ const Navbar = () => {
   const [navCategories, setNavCategories] = useState([]);
   const [featuredItems, setFeaturedItems] = useState([]);
 
+  // --- START: Logic for the new Announcement Ticker ---
+  const announcements = [
+    "✨ Free Shipping on All Orders Above ₹2000 ✨",
+    "🎉 New Arrivals are Here! Shop Now! 🎉",
+    " handcrafted with ❤️ from India",
+    "🎁 The Perfect Gift for Any Occasion 🎁",
+  ];
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
+    }, 4000); // Change announcement every 4 seconds
+    return () => clearInterval(timer);
+  }, [announcements.length]);
+  // --- END: Logic for the new Announcement Ticker ---
+
   const { state: cartState, dispatch: cartDispatch } = useContext(CartContext);
-  const { cartItems, isCartOpen } = cartState; // Get isCartOpen to handle drawer logic
+  const { cartItems } = cartState;
   const { state: authState, dispatch: authDispatch } = useContext(AuthContext);
   const { userInfo } = authState;
   const { state: wishlistState, dispatch: wishlistDispatch } =
@@ -41,11 +56,9 @@ const Navbar = () => {
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        const categoriesPromise = API.get("/products/categories");
-        const featuredPromise = API.get("/products?sort=latest&limit=2");
         const [categoriesRes, featuredRes] = await Promise.all([
-          categoriesPromise,
-          featuredPromise,
+          API.get("/products/categories"),
+          API.get("/products?sort=latest&limit=2"),
         ]);
         setNavCategories(categoriesRes.data);
         setFeaturedItems(featuredRes.data.products);
@@ -93,31 +106,27 @@ const Navbar = () => {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      {/* Top Announcement Bar */}
-      <div className="bg-text-primary text-page-bg text-sm">
-        <div className="container mx-auto px-6 py-2 flex justify-between items-center">
-          <span className="opacity-90">
-            Free Shipping on All Orders Above ₹2000
-          </span>
-          <div className="hidden md:flex items-center space-x-4">
-            <a
-              href="tel:+919876543210"
-              className="flex items-center hover:text-brand-gold"
+      {/* --- START: Redesigned Announcement Bar --- */}
+      <div className="bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 text-white font-bold text-sm text-center">
+        <div className="container mx-auto px-6 h-10 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentAnnouncement}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ ease: "easeInOut", duration: 0.5 }}
             >
-              <FaPhone className="mr-2" /> +91 987 654 3210
-            </a>
-            <a
-              href="mailto:contact@brbartfusion.com"
-              className="flex items-center hover:text-brand-gold"
-            >
-              <FaEnvelope className="mr-2" /> contact@brbartfusion.com
-            </a>
-          </div>
+              {announcements[currentAnnouncement]}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
+      {/* --- END: Redesigned Announcement Bar --- */}
 
       {/* Main Navigation */}
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+        {/* ... Rest of your Navbar code remains the same ... */}
         <Link to="/">
           <Logo />
         </Link>
@@ -189,7 +198,7 @@ const Navbar = () => {
                           <img
                             src={featuredItems[0].images[0]}
                             alt={featuredItems[0].name}
-                            className="rounded-md  object-cover h-48 w-48"
+                            className="rounded-md object-cover h-48 w-48"
                           />
                         </Link>
                       </div>
@@ -294,7 +303,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* --- Fully Functional Mobile Menu --- */}
+      {/* Fully Functional Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -330,7 +339,9 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/profile"
-                    className={`${mobileNavLinkClass} text-text-primary`}
+                    className={`${mobileNavLinkClass({
+                      isActive: false,
+                    })} text-text-primary`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Profile
@@ -338,7 +349,9 @@ const Navbar = () => {
                   {userInfo.isAdmin && (
                     <Link
                       to="/admin/dashboard"
-                      className={`${mobileNavLinkClass} text-text-primary`}
+                      className={`${mobileNavLinkClass({
+                        isActive: false,
+                      })} text-text-primary`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard
