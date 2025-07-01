@@ -2,38 +2,118 @@
 @tailwind components;
 @tailwind utilities;
 
-/* In src/assets/styles/index.css */
+/* --- Existing Pagination Styles (Preserved) --- */
 .pagination {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-    padding: 0;
-    margin-top: 2rem;
-  }
-  .page-item {
-    margin: 0 5px;
-  }
-  .page-link {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    color: #BFA181;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  .page-item.active .page-link {
-    background-color: #BFA181;
-    color: white;
-    border-color: #BFA181;
-  }
-  .page-item.disabled .page-link {
-    color: #ccc;
-    cursor: not-allowed;
-  }
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin-top: 2rem;
+}
+.page-item {
+  margin: 0 5px;
+}
+.page-link {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  color: #BFA181;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.page-item.active .page-link {
+  background-color: #BFA181;
+  color: white;
+  border-color: #BFA181;
+}
+.page-item.disabled .page-link {
+  color: #ccc;
+  cursor: not-allowed;
+}
 
 
-  /* client/src/assets/styles/index.css */
-/* client/src/assets/styles/index.css */
-/* client/src/assets/styles/index.css */
+/* --- NEW: Custom styles for the Featured Products carousel (react-slick) --- */
+.slick-container .slick-arrow-custom {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  color: #374151; /* Tailwind's gray-700 */
+}
+
+.slick-container .slick-arrow-custom:hover {
+  background-color: #f3f4f6; /* Tailwind's gray-100 */
+  transform: translateY(-50%) scale(1.05);
+}
+
+.slick-container .slick-arrow-custom--prev {
+  left: -20px;
+}
+
+.slick-container .slick-arrow-custom--next {
+  right: -20px;
+}
+
+/* Responsive adjustments for arrows on smaller screens */
+@media (max-width: 768px) {
+  .slick-container .slick-arrow-custom--prev {
+    left: -10px;
+  }
+  .slick-container .slick-arrow-custom--next {
+    right: -10px;
+  }
+}
+
+/* Custom styles for the carousel dots */
+.slick-dots-custom {
+  position: absolute;
+  bottom: -50px;
+  width: 100%;
+  text-align: center;
+}
+
+.slick-dots-custom li {
+  margin: 0 8px;
+  display: inline-block;
+}
+
+.slick-dot-custom-outer {
+  width: 12px;
+  height: 12px;
+  padding: 2px;
+  border-radius: 50%;
+  border: 1px solid #d1d5db; /* Tailwind's gray-300 */
+  transition: all 0.2s ease-in-out;
+}
+
+.slick-dot-custom-inner {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+}
+
+/* THEMED: Active dot style using your brand color */
+.slick-active .slick-dot-custom-outer {
+  border-color: #BFA181;
+}
+
+.slick-active .slick-dot-custom-inner {
+  background-color: #BFA181;
+}
+
+
+/* --- Existing Base Layer Styles (Preserved) --- */
 @layer base {
   body {
     /* Apply the dark background and light text to the whole site */

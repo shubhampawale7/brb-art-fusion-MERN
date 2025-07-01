@@ -10,7 +10,7 @@ import ProductCard from "../components/products/ProductCard";
 import { FaFilter } from "react-icons/fa";
 import Modal from "../components/common/Modal";
 import QuickView from "../components/products/QuickView";
-import FilterDrawer from "../components/common/FilterDrawer"; // Import the new component
+import FilterDrawer from "../components/common/FilterDrawer";
 
 const ShopPage = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const ShopPage = () => {
   const [maxPrice, setMaxPrice] = useState(urlMaxPrice);
   const [quickViewProductId, setQuickViewProductId] = useState(null);
   const [searchTerm, setSearchTerm] = useState(urlKeyword);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false); // State for the drawer
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   // Debouncing effect for search
   useEffect(() => {
@@ -100,7 +100,7 @@ const ShopPage = () => {
     else currentParams.delete("maxPrice");
     currentParams.delete("page");
     setSearchParams(currentParams);
-    setIsFilterDrawerOpen(false); // Close drawer on apply
+    setIsFilterDrawerOpen(false);
   };
 
   const clearFilters = () => {
@@ -129,8 +129,7 @@ const ShopPage = () => {
         clearFilters={clearFilters}
       />
 
-      <div className="container mx-auto px-6 py-12">
-        {/* Page Header */}
+      <div className="container mx-auto px-4 py-8 sm:px-6 sm:py-12">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold font-serif mb-2">
             Shop Our Collection
@@ -142,8 +141,7 @@ const ShopPage = () => {
           </p>
         </div>
 
-        {/* Controls: Search and Filter Button */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 p-4 bg-gray-50 rounded-lg shadow-sm sticky top-20 z-10">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 p-4 bg-gray-50 rounded-lg shadow-sm sticky top-16 sm:top-20 z-10">
           <div className="w-full md:w-1/3">
             <SearchBox
               value={searchTerm}
@@ -159,7 +157,6 @@ const ShopPage = () => {
           </button>
         </div>
 
-        {/* Main Product Grid */}
         <main>
           {loading ? (
             <div className="flex justify-center items-center h-96">
@@ -167,16 +164,11 @@ const ShopPage = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* THIS IS THE KEY LINE FOR RESPONSIVENESS */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {mainProductsData.products.length > 0 ? (
                   mainProductsData.products.map((product) => (
-                    <ProductCard
-                      key={product._id}
-                      product={product}
-                      onQuickViewClick={() =>
-                        setQuickViewProductId(product._id)
-                      }
-                    />
+                    <ProductCard key={product._id} product={product} />
                   ))
                 ) : (
                   <div className="col-span-full text-center py-16">
