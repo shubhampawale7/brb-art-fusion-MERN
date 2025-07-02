@@ -189,8 +189,27 @@ const cancelOrder = asyncHandler(async (req, res) => {
   const updatedOrder = await order.save();
   res.json(updatedOrder);
 });
+// @desc    Update an order with tracking information
+// @route   PUT /api/orders/:id/tracking
+// @access  Private/Admin
+const updateOrderTracking = asyncHandler(async (req, res) => {
+  const { shippingPartner, trackingId } = req.body;
+  const order = await Order.findById(req.params.id);
+
+  if (order) {
+    order.shippingPartner = shippingPartner;
+    order.trackingId = trackingId;
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+});
 
 export {
+  updateOrderTracking,
   addOrderItems,
   getMyOrders,
   getOrderById,

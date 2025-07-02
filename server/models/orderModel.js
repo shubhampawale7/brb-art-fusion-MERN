@@ -34,7 +34,6 @@ const orderSchema = new mongoose.Schema(
       id: { type: String },
       status: { type: String },
       update_time: { type: String },
-      email_address: { type: String },
       signature: { type: String },
     },
     shippingPrice: {
@@ -63,7 +62,6 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: {
       type: Date,
     },
-    // --- New Fields for Cancellation ---
     isCancelled: {
       type: Boolean,
       required: true,
@@ -73,6 +71,13 @@ const orderSchema = new mongoose.Schema(
       type: Date,
     },
     cancellationReason: {
+      type: String,
+    },
+    // --- New Fields for Order Tracking ---
+    shippingPartner: {
+      type: String,
+    },
+    trackingId: {
       type: String,
     },
   },
