@@ -29,17 +29,21 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/tracking-webhook", trackingRoutes);
 
+// --- DEPLOYMENT CONFIGURATION ---
 if (process.env.NODE_ENV === "production") {
   const __dirname = path.resolve();
-  app.use(express.static(path.join(__dirname, "/client/dist")));
+  // CORRECTED: Go up one level to the project root to find the client/dist folder
+  app.use(express.static(path.join(__dirname, "..", "client", "dist")));
+
   app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
+    res.sendFile(path.resolve(__dirname, "..", "client", "dist", "index.html"))
   );
 } else {
   app.get("/", (req, res) => {
     res.send("API is running...");
   });
 }
+// --- END DEPLOYMENT CONFIGURATION ---
 
 app.use(notFound);
 app.use(errorHandler);
