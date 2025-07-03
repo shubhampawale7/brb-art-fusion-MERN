@@ -52,11 +52,17 @@ function App() {
   const { isCartOpen } = state;
   const location = useLocation();
 
+  // ADDED: Check if the current path is an admin page
+  const isAdminPage = location.pathname.startsWith("/admin");
+
   return (
     <div className="flex flex-col min-h-screen bg-page-bg text-text-primary">
       <ScrollToTop />
       <Toaster position="top-center" richColors />
-      <Navbar />
+
+      {/* CHANGED: Conditionally render the Navbar */}
+      {!isAdminPage && <Navbar />}
+
       <main className="flex-grow">
         {/* AnimatePresence allows components to animate when they are removed from the tree */}
         <AnimatePresence mode="wait">
@@ -115,11 +121,17 @@ function App() {
           </Routes>
         </AnimatePresence>
       </main>
-      <Footer />
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => dispatch({ type: "CLOSE_CART" })}
-      />
+
+      {/* CHANGED: Conditionally render the Footer */}
+      {!isAdminPage && <Footer />}
+
+      {/* CHANGED: Conditionally render the CartDrawer */}
+      {!isAdminPage && (
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => dispatch({ type: "CLOSE_CART" })}
+        />
+      )}
     </div>
   );
 }
