@@ -76,8 +76,8 @@ const MaterialComparison = () => {
           </h2>
           <p className="text-lg md:text-xl text-gray-600 mt-3 max-w-3xl mx-auto">
             Experience the distinct beauty and unique characteristics of our
-            signature materials: the traditional **Kansa (Bronze)** and the
-            timeless **Brass**.
+            signature materials: the traditional <strong>Kansa (Bronze)</strong>{" "}
+            and the timeless <strong>Brass</strong> .
           </p>
         </motion.div>
         {/* Image Comparison Slider */}
