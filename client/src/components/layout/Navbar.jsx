@@ -360,7 +360,7 @@ const Navbar = () => {
                   </div>
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brb-primary transition-colors flex items-center"
+                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brb-primary transition-colors flex items-center"
                     onClick={() => setDropdownOpen(false)}
                   >
                     <FiSettings className="mr-2" /> Your Profile
@@ -369,7 +369,7 @@ const Navbar = () => {
                   {userInfo.isAdmin && (
                     <Link
                       to="/admin/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brb-primary transition-colors font-semibold border-t border-gray-100 mt-1 pt-2 flex items-center"
+                      className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brb-primary transition-colors font-semibold border-t border-gray-100 mt-1 pt-2 flex items-center"
                       onClick={() => setDropdownOpen(false)}
                     >
                       <FiGlobe className="mr-2" /> Admin Dashboard
@@ -377,7 +377,7 @@ const Navbar = () => {
                   )}
                   <button
                     onClick={logoutHandler}
-                    className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors border-t border-gray-100 mt-1 pt-2 flex items-center"
+                    className="w-full text-left  px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors border-t border-gray-100 mt-1 pt-2 flex items-center"
                   >
                     <FiLogOut className="mr-2" /> Logout
                   </button>
