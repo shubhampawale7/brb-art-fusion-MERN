@@ -8,10 +8,10 @@ export default {
         serif: ["Playfair Display", "serif"],
       },
       colors: {
-        "brand-accent": "#111827", // Crimson Red
+        "brand-accent": "#991B1B", // Crimson Red
         "page-bg": "#F8F7F4", // Off-White / Light Beige
         "card-bg": "#FFFFFF", // Pure White for cards
-        "text-primary": "#111827", // Dark Slate Blue
+        "text-primary": "#991B1B", // Dark Slate Blue
         "text-secondary": "#64748B", // Lighter Slate Gray
         "brand-gold": "#BFA181", // Muted Gold for highlights
         "brb-primary": "#BFA181",
@@ -25,7 +25,7 @@ export default {
         "gray-600": "#4B5563",
         "gray-700": "#374151",
         "gray-800": "#1F2937",
-        "gray-900": "#111827",
+        "gray-900": "#991B1B",
         white: "#FFFFFF",
         "red-500": "#EF4444",
         "blue-500": "#3B82F6",
