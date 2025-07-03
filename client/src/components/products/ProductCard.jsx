@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { FaStar } from "react-icons/fa";
-import { FiShoppingCart } from "react-icons/fi";
+import { FiStar, FiShoppingCart } from "react-icons/fi"; // Using Feather Icons
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
+import { motion } from "framer-motion"; // For animations
 
-import FavoriteButton from "./FavoriteButton";
+import FavoriteButton from "./FavoriteButton"; // Your existing FavoriteButton
 import { useContext } from "react";
 import { CartContext } from "../../context/CartContext";
 import { toast } from "sonner";
@@ -17,11 +17,11 @@ const ProductCard = ({ product }) => {
 
   const addToCartHandler = (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent click from bubbling to the Link
 
     if (product.countInStock > 0) {
       cartDispatch({ type: "ADD_TO_CART", payload: { ...product, qty: 1 } });
-      toast.success(`${product.name} added to cart!`);
+      toast.success(`"${product.name}" added to cart!`);
     } else {
       toast.error("This product is currently out of stock.");
     }
@@ -29,83 +29,120 @@ const ProductCard = ({ product }) => {
 
   const isOutOfStock = product.countInStock === 0;
 
+  // Helper to format price safely
+  const formatPrice = (price) =>
+    typeof price === "number" ? price.toFixed(2) : "0.00";
+
+  // Framer Motion variants for the hover overlay and buttons
+  const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  const buttonVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+  };
+
   return (
     <Link
       to={`/product/${product._id}`}
-      // The group class enables the hover effects on child elements
-      className="block group relative aspect-square w-full h-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+      // Main card container: square aspect ratio, elegant shadows, border for definition
+      className="block group relative aspect-square w-full overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer border border-gray-100"
     >
-      {/* 1. Background Image: Zooms slightly on hover */}
-      <LazyLoadImage
-        alt={product.name}
-        src={product.images?.[0] || placeholderImage}
-        effect="blur"
-        placeholderSrc={placeholderImage}
-        className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-      />
+      {/* Product Image - Main visual, scales slightly on hover */}
+      <motion.div
+        className="absolute inset-0"
+        initial={{ scale: 1 }}
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <LazyLoadImage
+          alt={product.name}
+          src={product.images?.[0] || placeholderImage}
+          effect="blur"
+          placeholderSrc={placeholderImage}
+          className="w-full h-full object-cover"
+        />
+      </motion.div>
 
-      {/* 2. Favorite Button (Top Right) */}
-      <div className="absolute top-3 right-3 z-20 opacity-80 group-hover:opacity-100 transition-opacity">
-        <FavoriteButton product={product} />
-      </div>
-
-      {/* Out of Stock Badge (if applicable) */}
+      {/* Out of Stock Badge - Always visible, top left */}
       {isOutOfStock && (
-        <div className="absolute top-3 left-3 bg-gray-900 bg-opacity-70 text-white text-xs font-semibold px-2 py-1 rounded-full z-10">
-          OUT OF STOCK
+        <div className="absolute top-4 left-4 bg-gray-900 bg-opacity-80 text-white text-xs font-semibold px-3 py-1.5 rounded-full z-10 tracking-wide uppercase">
+          Out of Stock
         </div>
       )}
 
-      {/* 3. Main Content Overlay Container */}
-      {/* This container now has the hover effect to slide up */}
-      <div className="absolute bottom-0 left-0 right-0 h-2/3 flex flex-col justify-end text-white overflow-hidden transition-transform duration-500 ease-in-out group-hover:-translate-y-12">
-        {/* On-brand gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-accent/80 via-brand-accent/40 to-transparent"></div>
-
-        <div className="relative p-4 z-10">
-          {/* Product Name */}
-          <h3 className="text-base font-bold truncate transition-colors">
-            {product.name}
-          </h3>
-
+      {/* Content Overlay (always visible - name, price, rating) */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white bg-opacity-95 backdrop-blur-sm z-10">
+        {" "}
+        {/* Semi-transparent white overlay with blur */}
+        {/* Product Name */}
+        <h3 className="text-lg font-bold text-gray-900 line-clamp-2 leading-tight mb-1">
+          {product.name}
+        </h3>
+        {/* Price & Rating - Stacked or side-by-side depending on space */}
+        <div className="flex items-center justify-between mt-2">
           {/* Price */}
-          <p className="text-lg font-extrabold text-primary mt-1">
-            ₹{product.price?.toFixed(2)}
+          <p className="text-xl font-extrabold text-brb-primary">
+            ₹{formatPrice(product.price)}
           </p>
-
-          {/* Details that appear on hover */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 pt-3">
-            <div className="flex justify-between items-center">
-              {product.numReviews > 0 && (
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <FaStar
-                      key={i}
-                      className={
-                        i < Math.round(product.rating)
-                          ? "text-primary"
-                          : "text-white/30"
-                      }
-                    />
-                  ))}
-                  <span className="text-xs text-white/70 ml-1">
-                    ({product.numReviews})
-                  </span>
-                </div>
-              )}
-              <button
-                onClick={addToCartHandler}
-                disabled={isOutOfStock}
-                // Styled to match your brand's gold accent
-                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold rounded-full bg-brand-gold text-brand-accent hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
-              >
-                <FiShoppingCart />
-                <span>{isOutOfStock ? "Out of Stock" : "Add"}</span>
-              </button>
+          {/* Rating */}
+          {product.numReviews > 0 && (
+            <div className="flex items-center gap-1 text-yellow-500">
+              {[...Array(5)].map((_, i) => (
+                <FiStar
+                  key={i}
+                  className={
+                    i < Math.round(product.rating)
+                      ? "text-yellow-500"
+                      : "text-gray-300"
+                  }
+                />
+              ))}
+              <span className="text-xs text-gray-500 ml-0.5">
+                ({product.numReviews})
+              </span>
             </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Hover Overlay - Reveals buttons on hover, covers the image */}
+      <motion.div
+        className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex flex-col items-center justify-center space-y-4 z-20"
+        initial="hidden"
+        whileHover="visible"
+        variants={overlayVariants}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {/* Favorite Button */}
+        <motion.div
+          variants={buttonVariants}
+          transition={{ duration: 0.2, delay: 0.05, ease: "easeOut" }}
+        >
+          <FavoriteButton product={product} />
+        </motion.div>
+
+        {/* Add to Cart Button */}
+        <motion.div
+          variants={buttonVariants}
+          transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
+        >
+          <button
+            onClick={addToCartHandler}
+            disabled={isOutOfStock}
+            className={`
+              flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold
+              bg-white text-gray-800 hover:bg-gray-100 hover:text-brb-primary transition-all duration-200 shadow-lg
+              disabled:bg-gray-400 disabled:text-white disabled:cursor-not-allowed
+            `}
+          >
+            <FiShoppingCart className="text-lg" />
+            <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
+          </button>
+        </motion.div>
+      </motion.div>
     </Link>
   );
 };

@@ -1,10 +1,11 @@
-import { FaSearch } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi"; // Using Feather Icons for consistency
 
-const SearchBox = ({ value, onChange }) => {
+const SearchBox = ({ value, onChange, placeholder = "Search products..." }) => {
+  // Added default placeholder prop
   const handleSubmit = (e) => {
     e.preventDefault();
-    // The live search happens automatically, but this prevents page reload
-    // if the user hits Enter.
+    // The live search (debounce) happens automatically via onChange.
+    // This just prevents a full page reload if the user hits Enter.
   };
 
   return (
@@ -14,12 +15,13 @@ const SearchBox = ({ value, onChange }) => {
         name="q"
         value={value}
         onChange={onChange}
-        placeholder="Search products..."
-        className="w-full p-2 pl-10 border rounded-md focus:ring-brand-accent focus:ring-2 focus:outline-none"
+        placeholder={placeholder} // Use the placeholder prop
+        className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brb-primary focus:border-brb-primary transition-all duration-200 text-base md:text-lg" /* Enhanced styling */
         aria-label="Search products"
       />
       {/* Search Icon inside the input field for better UI */}
-      <FaSearch className="absolute left-3 text-gray-400 pointer-events-none" />
+      <FiSearch className="absolute left-4 text-gray-500 text-xl pointer-events-none" />{" "}
+      {/* Larger, darker icon */}
     </form>
   );
 };

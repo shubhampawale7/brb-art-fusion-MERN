@@ -1,9 +1,19 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
-import { CartContext } from "../../context/CartContext";
 import { toast } from "sonner";
+import {
+  FiShoppingCart, // For cart header
+  FiX, // For close button
+  FiTrash2, // For remove item (more modern than FaTrash)
+  FiPlus, // For quantity increase
+  FiMinus, // For quantity decrease
+  FiArrowRightCircle, // For checkout button
+  FiShoppingBag, // For continue shopping button (or for empty cart)
+  FiTag, // For subtotal icon
+} from "react-icons/fi"; // Using Feather Icons for consistency
+
+import { CartContext } from "../../context/CartContext";
 
 const CartDrawer = ({ isOpen, onClose }) => {
   const { state, dispatch } = useContext(CartContext);
@@ -15,17 +25,32 @@ const CartDrawer = ({ isOpen, onClose }) => {
   );
 
   const updateQuantityHandler = (item, newQty) => {
-    // Prevent quantity from going below 1 or above available stock
-    if (newQty < 1 || newQty > item.countInStock) {
-      toast.error(`Only ${item.countInStock} items available in stock.`);
+    if (newQty < 1) {
+      // If quantity drops below 1, confirm removal
+      if (window.confirm(`Remove ${item.name} from your cart?`)) {
+        dispatch({ type: "REMOVE_FROM_CART", payload: item });
+        toast.info(`${item.name} removed from cart.`);
+      }
+      return;
+    }
+    if (newQty > item.countInStock) {
+      toast.error(
+        `Only ${item.countInStock} of ${item.name} available in stock.`
+      );
       return;
     }
     dispatch({ type: "ADD_TO_CART", payload: { ...item, qty: newQty } });
   };
 
   const removeFromCartHandler = (item) => {
-    dispatch({ type: "REMOVE_FROM_CART", payload: item });
-    toast.info(`${item.name} removed from cart.`);
+    if (
+      window.confirm(
+        `Are you sure you want to remove "${item.name}" from your cart?`
+      )
+    ) {
+      dispatch({ type: "REMOVE_FROM_CART", payload: item });
+      toast.info(`${item.name} removed from cart.`);
+    }
   };
 
   return (
@@ -47,67 +72,93 @@ const CartDrawer = ({ isOpen, onClose }) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-            className="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-50 flex flex-col rounded-l-xl overflow-hidden" // Added rounded-l-xl
           >
-            <header className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-2xl font-bold font-serif text-text-primary">
-                Your Cart
+            {/* Drawer Header */}
+            <header className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white sticky top-0 z-10">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                <FiShoppingCart className="mr-3 text-brb-primary text-3xl" />
+                Your Cart ({cartItems.length})
               </h2>
               <button
                 onClick={onClose}
-                className="text-2xl text-gray-500 hover:text-gray-800"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-3xl p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+                aria-label="Close cart"
               >
-                <FaTimes />
+                <FiX />
               </button>
             </header>
 
             {cartItems.length === 0 ? (
-              <div className="flex-grow flex flex-col justify-center items-center text-center p-6">
-                <p className="text-xl text-text-secondary">
-                  Your cart is empty.
+              /* Empty Cart State */
+              <div className="flex-grow flex flex-col justify-center items-center text-center p-6 bg-gray-50">
+                <FiShoppingCart className="text-brb-primary text-6xl mb-6 opacity-70" />
+                <p className="text-2xl font-semibold text-gray-700 mb-4">
+                  Your cart is empty!
                 </p>
-                <button
+                <p className="text-gray-500 mb-6 max-w-xs">
+                  Looks like you haven't added anything to your cart yet. Start
+                  shopping to find great deals!
+                </p>
+                <Link
+                  to="/shop"
                   onClick={onClose}
-                  className="mt-4 bg-brand-accent text-white px-6 py-2 rounded-md font-semibold"
+                  className="inline-flex items-center bg-brb-primary text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-brb-primary-dark transition-colors shadow-md"
                 >
-                  Continue Shopping
-                </button>
+                  <FiShoppingBag className="mr-2" /> Start Shopping
+                </Link>
               </div>
             ) : (
               <>
-                {/* --- List of Cart Items --- */}
-                <div className="flex-grow p-6 overflow-y-auto space-y-6">
+                {/* List of Cart Items */}
+                <div className="flex-grow p-6 overflow-y-auto space-y-6 custom-scrollbar">
+                  {" "}
+                  {/* Added custom-scrollbar */}
                   {cartItems.map((item) => (
-                    <div key={item._id} className="flex items-center gap-4">
-                      <img
-                        src={item.images[0]}
-                        alt={item.name}
-                        className="w-24 h-24 object-cover rounded-md"
-                      />
+                    <motion.div
+                      key={item._id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      layout // Enable smooth layout transitions when items are added/removed
+                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-100"
+                    >
+                      <Link
+                        to={`/product/${item._id}`}
+                        onClick={onClose}
+                        className="flex-shrink-0"
+                      >
+                        <img
+                          src={item.images[0]}
+                          alt={item.name}
+                          className="w-24 h-24 object-cover rounded-md border border-gray-200"
+                        />
+                      </Link>
                       <div className="flex-grow space-y-1">
                         <Link
                           to={`/product/${item._id}`}
-                          className="font-semibold hover:underline text-text-primary"
+                          className="font-semibold text-gray-800 hover:text-brb-primary line-clamp-2"
                           onClick={onClose}
                         >
                           {item.name}
                         </Link>
-                        <p className="text-brand-gold font-semibold">
+                        <p className="text-lg font-bold text-brb-primary">
                           ₹{item.price.toFixed(2)}
                         </p>
 
-                        {/* --- New Quantity Selector --- */}
-                        <div className="flex items-center border rounded-md w-fit">
+                        {/* Quantity Selector */}
+                        <div className="flex items-center border border-gray-300 rounded-md w-fit overflow-hidden shadow-sm mt-2">
                           <button
                             onClick={() =>
                               updateQuantityHandler(item, item.qty - 1)
                             }
-                            disabled={item.qty === 1}
-                            className="px-3 py-1 text-lg disabled:opacity-50"
+                            disabled={item.qty <= 1} // Disable if quantity is 1 (will prompt for removal)
+                            className="px-3 py-1 text-lg text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            aria-label={`Decrease quantity of ${item.name}`}
                           >
-                            -
+                            <FiMinus />
                           </button>
-                          <span className="px-4 py-1 font-bold">
+                          <span className="px-4 py-1 text-base font-semibold text-gray-800 border-x border-gray-300">
                             {item.qty}
                           </span>
                           <button
@@ -115,41 +166,47 @@ const CartDrawer = ({ isOpen, onClose }) => {
                               updateQuantityHandler(item, item.qty + 1)
                             }
                             disabled={item.qty >= item.countInStock}
-                            className="px-3 py-1 text-lg disabled:opacity-50"
+                            className="px-3 py-1 text-lg text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            aria-label={`Increase quantity of ${item.name}`}
                           >
-                            +
+                            <FiPlus />
                           </button>
                         </div>
                       </div>
+                      {/* Remove Button */}
                       <button
                         onClick={() => removeFromCartHandler(item)}
-                        className="text-gray-400 hover:text-red-500 self-start"
+                        className="text-gray-500 hover:text-red-600 transition-colors self-start p-2 rounded-full hover:bg-red-50"
+                        aria-label={`Remove ${item.name} from cart`}
                       >
-                        <FaTrash />
+                        <FiTrash2 className="text-xl" />
                       </button>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
 
-                {/* --- Updated Footer Buttons --- */}
-                <footer className="p-6 border-t bg-gray-50">
-                  <div className="flex justify-between font-bold text-lg mb-4">
-                    <span>Subtotal</span>
-                    <span>₹{subtotal.toFixed(2)}</span>
+                {/* Footer (Subtotal & Buttons) */}
+                <footer className="p-6 border-t border-gray-200 bg-white sticky bottom-0">
+                  <div className="flex justify-between items-center font-bold text-xl mb-4 text-gray-900">
+                    <span className="flex items-center text-brb-primary">
+                      <FiTag className="mr-2 text-2xl" /> Subtotal:
+                    </span>
+                    <span className="text-2xl">₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="space-y-3">
                     <Link
                       to="/shipping"
                       onClick={onClose}
-                      className="w-full block text-center bg-brand-accent text-white py-3 rounded-md font-semibold hover:bg-opacity-90"
+                      className="w-full inline-flex items-center justify-center bg-brb-primary text-white py-3.5 rounded-lg font-semibold text-lg hover:bg-brb-primary-dark transition-colors shadow-md"
                     >
-                      Proceed to Checkout
+                      <FiArrowRightCircle className="mr-2" /> Proceed to
+                      Checkout
                     </Link>
                     <button
                       onClick={onClose}
-                      className="w-full block text-center bg-gray-200 text-text-primary py-3 rounded-md font-semibold hover:bg-gray-300"
+                      className="w-full inline-flex items-center justify-center bg-gray-200 text-gray-700 py-3.5 rounded-lg font-semibold text-lg hover:bg-gray-300 transition-colors"
                     >
-                      Continue Shopping
+                      <FiShoppingBag className="mr-2" /> Continue Shopping
                     </button>
                   </div>
                 </footer>

@@ -3,6 +3,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { ClipLoader } from "react-spinners"; // For loading spinner
+import { FiMail, FiLock, FiLogIn, FiUserPlus } from "react-icons/fi"; // Feather Icons
+
 import { AuthContext } from "../context/AuthContext";
 import API from "../services/api";
 
@@ -42,57 +45,96 @@ const LoginPage = () => {
     }
   };
 
+  const inputClass =
+    "w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brb-primary focus:border-brb-primary outline-none transition text-gray-800";
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+
   return (
     <>
       <Helmet>
         <title>Sign In - BRB Art Fusion</title>
       </Helmet>
-      <div className="container mx-auto px-6 py-12 max-w-md">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        {" "}
+        {/* Full page height, centered content */}
         <motion.div
-          className="bg-white p-8 rounded-lg shadow-md"
-          initial={{ opacity: 0, y: 20 }}
+          className="max-w-md w-full bg-white p-8 sm:p-10 rounded-xl shadow-2xl border border-gray-100"
+          initial={{ opacity: 0, y: 50 }} // Animate from slightly below
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }} // Smooth entry animation
         >
-          <h1 className="text-3xl font-bold mb-6 text-center">Sign In</h1>
-          <form onSubmit={submitHandler} className="space-y-4">
-            {/* ... (Form fields for email and password as in ShippingPage) ... */}
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-6 text-center tracking-tight leading-tight">
+            {" "}
+            {/* Larger, bolder heading */}
+            Welcome Back!
+          </h1>
+          <p className="text-gray-600 text-center mb-8 text-lg">
+            Sign in to your account to continue.
+          </p>
+          <form onSubmit={submitHandler} className="space-y-6">
+            {" "}
+            {/* Increased spacing */}
+            {/* Email Address */}
             <div>
-              <label>Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#BFA181] focus:border-[#BFA181]"
-              />
+              <label htmlFor="email" className={labelClass}>
+                Email Address
+              </label>
+              <div className="relative">
+                <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </div>
             </div>
+            {/* Password */}
             <div>
-              <label>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#BFA181] focus:border-[#BFA181]"
-              />
+              <label htmlFor="password" className={labelClass}>
+                Password
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </div>
             </div>
+            {/* Submit Button */}
             <div className="pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#333333] text-white py-3 rounded-md hover:bg-black transition disabled:bg-gray-400"
+                className="w-full bg-brb-primary text-white py-3 rounded-lg hover:bg-brb-primary-dark transition-colors font-semibold text-lg flex items-center justify-center shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                {loading ? "Signing In..." : "Sign In"}
+                {loading ? (
+                  <ClipLoader size={24} color="white" />
+                ) : (
+                  <>
+                    <FiLogIn className="mr-2" /> Sign In
+                  </>
+                )}
               </button>
             </div>
           </form>
-          <div className="mt-4 text-center">
+          {/* Register Link */}
+          <div className="mt-8 text-center text-base text-gray-700">
+            {" "}
+            {/* Increased margin, larger text */}
             New Customer?{" "}
             <Link
               to={`/register?redirect=${redirect}`}
-              className="text-[#BFA181] hover:underline"
+              className="text-brb-primary hover:text-brb-primary-dark font-semibold transition-colors flex items-center justify-center mt-3" // Highlighted link, center aligned, new icon
             >
-              Register
+              <FiUserPlus className="mr-2" /> Create an Account
             </Link>
           </div>
         </motion.div>
