@@ -35,7 +35,6 @@ export default {
 
       // --- UPDATED MARQUEE ANIMATION ---
       animation: {
-        // Updated animation definition for a 20-second cycle with easing
         "marquee-paused": "marquee 20s ease-in-out infinite",
         "ping-once": "ping-once 0.5s cubic-bezier(0.4, 0, 0.6, 1) 1",
         "pulse-once": "pulse-once 1.5s ease-out 1",

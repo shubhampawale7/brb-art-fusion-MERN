@@ -1,126 +1,137 @@
 import { motion } from "framer-motion";
 import { FaAward, FaShippingFast, FaHeadset } from "react-icons/fa";
 
-// --- "Polished Liquid Metal" PromiseItem Card ---
-const PromiseItem = ({ icon, title, text, animationDelay }) => {
+// --- PromiseItem Card Component with "Golden Accent Reveal" Hover Effect ---
+const PromiseItem = ({ icon, title, text, delay }) => {
   const cardVariants = {
-    hidden: { opacity: 0, filter: "blur(8px)", y: 30 },
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
-      filter: "blur(0px)",
       y: 0,
       transition: {
-        duration: 0.8,
-        delay: animationDelay,
-        ease: [0.22, 1, 0.36, 1], // A very smooth 'out-expo' ease
+        duration: 0.6,
+        ease: "easeOut",
+        delay: delay,
       },
     },
   };
 
   return (
+    // Add `group` to the parent div to coordinate hover effects on children
     <motion.div
       variants={cardVariants}
-      className="group relative rounded-2xl overflow-hidden
-                 bg-gradient-to-br from-brand-gold to-brand-accent
-                 transition-all duration-500 ease-in-out"
+      className="group relative bg-card-bg p-8 rounded-xl border border-gray-200 shadow-sm
+                 overflow-hidden transition-all duration-300 ease-in-out
+                 hover:shadow-lg hover:shadow-brand-gold/10 hover:-translate-y-2"
     >
-      {/* Muted Overlay that fades on hover */}
-      <div className="absolute inset-0 bg-black/40 transition-all duration-500 group-hover:bg-black/10"></div>
-
-      <div className="relative p-8 text-center h-full flex flex-col items-center justify-center">
-        {/* Debossed Icon Effect */}
+      <div className="relative z-10">
+        {/* Icon Container - Now scales up slightly on hover */}
         <div
-          className="mb-6 flex h-20 w-20 items-center justify-center rounded-full
-                     bg-black/20 shadow-[inset_0_4px_8px_rgba(0,0,0,0.4)]
-                     transition-all duration-500 group-hover:bg-black/10"
+          className="inline-flex h-16 w-16 items-center justify-center
+                     rounded-full bg-brand-gold/10 mb-6
+                     transition-transform duration-300 ease-in-out
+                     group-hover:scale-110"
         >
-          <span className="text-4xl text-black/50 transition-all duration-500 group-hover:text-white/80">
-            {icon}
-          </span>
+          <span className="text-3xl text-brand-gold">{icon}</span>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10">
-          <h3 className="relative mb-3 text-2xl font-serif font-semibold text-white/90 tracking-wide">
-            {title}
-            {/* Animated Underline */}
-            <span
-              className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 h-[2px] w-1/3
-                         bg-brand-gold
-                         origin-center scale-x-0 transition-transform duration-500 ease-in-out
-                         group-hover:scale-x-100"
-            />
-          </h3>
-          <p className="text-white/70 leading-relaxed transition-colors duration-500 group-hover:text-white/80">
-            {text}
-          </p>
-        </div>
+        {/* Heading - Remains the same, but benefits from parent hover */}
+        <h3 className="text-2xl font-serif font-bold text-text-primary mb-3">
+          {title}
+        </h3>
+
+        {/* Body - Remains the same */}
+        <p className="font-sans text-text-secondary leading-relaxed">{text}</p>
       </div>
+
+      {/* Golden Accent Line - Hidden by default, animates in on hover */}
+      <div
+        className="absolute bottom-0 left-0 h-1 w-full bg-brand-accent
+                   origin-left transform scale-x-0
+                   transition-transform duration-400 ease-in-out
+                   group-hover:scale-x-100"
+      />
     </motion.div>
   );
 };
 
-// --- Main BrandPromise Component (No changes needed) ---
-const BrandPromise = () => {
+// --- Main BrandPromise Section Component (No changes from before) ---
+const BrandPromiseSection = () => {
   const promises = [
     {
       icon: <FaAward />,
-      title: "100% Handcrafted",
-      text: "Every piece is uniquely crafted with passion and precision by skilled artisans.",
-      delay: 0,
+      title: "Artisan Crafted",
+      text: "Every piece is uniquely crafted with passion and precision by our skilled artisans.",
     },
     {
       icon: <FaShippingFast />,
-      title: "Free & Fast Shipping",
-      text: "We provide swift, secure shipping on all orders above ₹2000, delivered with care.",
-      delay: 0.15,
+      title: "Insured Shipping",
+      text: "We provide swift and secure shipping on all orders, delivered with the utmost care.",
     },
     {
       icon: <FaHeadset />,
       title: "Dedicated Support",
       text: "Our knowledgeable and friendly team is here to help you with any questions.",
-      delay: 0.3,
     },
   ];
 
+  const sectionVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+      },
+    },
+  };
+
+  const headerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: "easeOut" },
+    },
+  };
+
   return (
-    <section className="py-20 sm:py-28 bg-page-bg">
+    <motion.section
+      className="py-20 sm:py-28 bg-page-bg"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      variants={sectionVariants}
+    >
       <div className="container mx-auto px-4 sm:px-6">
+        {/* Section Header */}
         <motion.div
+          variants={headerVariants}
           className="text-center max-w-3xl mx-auto mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8 }}
         >
-          <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-accent">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-text-primary">
             Our Unwavering Promise
           </h2>
-          <p className="text-lg text-text-secondary mt-4">
+          <p className="font-sans text-lg text-text-secondary mt-4">
             An experience rooted in quality, authenticity, and a commitment to
             your satisfaction.
           </p>
         </motion.div>
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          {promises.map((promise) => (
+        {/* Grid of Promises */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {promises.map((promise, index) => (
             <PromiseItem
-              key={promise.title}
+              key={index}
               icon={promise.icon}
               title={promise.title}
               text={promise.text}
-              animationDelay={promise.delay}
+              delay={index * 0.15}
             />
           ))}
-        </motion.div>
+        </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
-export default BrandPromise;
+export default BrandPromiseSection;
