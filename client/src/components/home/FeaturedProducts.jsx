@@ -82,7 +82,7 @@ const FeaturedProducts = ({ products }) => {
             transition={{ duration: 0.6, ease: "easeInOut", delay: 0.2 }}
           >
             <div className="lg:max-w-md">
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-800">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900">
                 Works of the Month
               </h2>
               <p className="text-lg text-gray-600 mt-4 mb-8">
