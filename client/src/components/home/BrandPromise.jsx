@@ -1,39 +1,50 @@
 import { motion } from "framer-motion";
 import { FaAward, FaShippingFast, FaHeadset } from "react-icons/fa";
-import { FiArrowUpRight } from "react-icons/fi"; // A more elegant icon for links
 
 // --- Redesigned PromiseItem Sub-Component ---
-// This card is designed with focused typography, spacing, and interactive details.
-const PromiseItem = ({ icon, title, text, animationDelay }) => (
-  <motion.div
-    className="bg-white p-8 rounded-lg border border-gray-200/80 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group"
-    initial={{ opacity: 0, y: 50 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.5 }}
-    transition={{ duration: 0.5, delay: animationDelay }}
-  >
-    {/* Styled Icon Container */}
-    <div className="w-16 h-16 rounded-full bg-brand-gold/10 flex items-center justify-center mb-6">
-      <div className="text-3xl text-brand-gold">{icon}</div>
-    </div>
+// "Polished Marble & Gold" Design: A luxurious, dark-themed card with dynamic glow effects.
+const PromiseItem = ({ icon, title, text, animationDelay }) => {
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.9, y: 40 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        delay: animationDelay,
+        ease: [0.16, 1, 0.3, 1], // A sharp, impactful ease
+      },
+    },
+  };
 
-    {/* Content */}
-    <h3 className="text-2xl font-serif font-bold mb-3 text-gray-900">
-      {title}
-    </h3>
-    <p className="text-gray-600 leading-relaxed">{text}</p>
+  return (
+    <motion.div
+      variants={cardVariants}
+      className="group relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-slate-800 to-slate-900 p-8 transition-all duration-300 hover:border-brand-gold/30 hover:-translate-y-2"
+    >
+      {/* Background Glow Effect */}
+      <div className="absolute -top-1/2 -right-1/3 w-full h-full bg-brand-gold/10 rounded-full blur-3xl opacity-40 transition-all duration-700 group-hover:opacity-70 group-hover:-right-1/4" />
 
-    {/* Subtle interactive element that appears on hover */}
-    <div className="mt-6">
-      <FiArrowUpRight
-        className="text-gray-300 transition-colors duration-300 group-hover:text-brand-accent"
-        size={24}
-      />
-    </div>
-  </motion.div>
-);
+      <div className="relative z-10">
+        {/* Golden Medallion Icon */}
+        <div className="mb-6 inline-block p-1 bg-gradient-to-br from-brand-gold to-brand-accent rounded-full transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_20px_theme(colors.brand.gold)]">
+          <div className="bg-slate-800 rounded-full p-3">
+            <div className="text-3xl text-brand-gold">{icon}</div>
+          </div>
+        </div>
 
-// --- Main BrandPromise Component ---
+        {/* Content */}
+        <h3 className="mb-3 text-2xl font-serif font-bold text-white/90">
+          {title}
+        </h3>
+        <p className="text-white/60 leading-relaxed">{text}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- Main BrandPromise Component (No changes needed here) ---
 const BrandPromise = () => {
   const promises = [
     {
@@ -46,42 +57,53 @@ const BrandPromise = () => {
       icon: <FaShippingFast />,
       title: "Free & Fast Shipping",
       text: "We provide swift, secure shipping on all orders above ₹2000, delivered with care.",
-      delay: 0.15,
+      delay: 0.2,
     },
     {
       icon: <FaHeadset />,
       title: "Dedicated Support",
       text: "Our knowledgeable and friendly team is here to help you with any questions.",
-      delay: 0.3,
+      delay: 0.4,
     },
   ];
 
   return (
     <section className="py-20 sm:py-28 bg-page-bg">
       <div className="container mx-auto px-4 sm:px-6">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-text-primary">
+        {/* Section Header with Gradient Text */}
+        <motion.div
+          className="text-center max-w-3xl mx-auto mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-accent">
             Our Unwavering Promise
           </h2>
           <p className="text-lg text-text-secondary mt-4">
             An experience rooted in quality, authenticity, and a commitment to
             your satisfaction.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Grid of Promises */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {promises.map((promise, index) => (
+        {/* Grid of Promises with staggered animation */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          {promises.map((promise) => (
             <PromiseItem
-              key={index}
+              key={promise.title}
               icon={promise.icon}
               title={promise.title}
               text={promise.text}
               animationDelay={promise.delay}
             />
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
